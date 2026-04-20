@@ -24,6 +24,8 @@ class LandingPageWidget extends TemplateWidget {
       'adminHint': hasAdmins
           ? 'Sign in from the dashboard to manage your data.'
           : 'Open the dashboard to create your first admin.',
+      'shippedCount':
+          'M1 · M2.1 dynamic collections · M2.2 rules · M2.3 users · realtime · files',
     });
   }
 }

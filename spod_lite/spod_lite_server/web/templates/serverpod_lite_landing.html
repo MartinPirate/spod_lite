@@ -206,7 +206,7 @@
     <section class="mb-24">
       <div class="flex items-end justify-between mb-8">
         <h2 class="text-2xl md:text-3xl font-bold tracking-tight">What's next</h2>
-        <span class="text-[12px] text-slate-500 font-mono">roadmap</span>
+        <span class="text-[12px] text-slate-500 font-mono">shipped · {{shippedCount}}</span>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <a href="{{dashboardUrl}}" class="group glass rounded-2xl p-6 hover:border-sky-500/40 transition-all hover:-translate-y-0.5">
@@ -217,40 +217,40 @@
             <svg class="w-5 h-5 text-slate-600 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
           </div>
           <div class="text-[15px] font-semibold mb-1">Create your first collection</div>
-          <p class="text-[13px] text-slate-400">Schema, rules, record browser — all in the dashboard.</p>
+          <p class="text-[13px] text-slate-400">Schema editor, per-op rules, record browser — all in the dashboard.</p>
         </a>
 
-        <div class="glass rounded-2xl p-6 opacity-60 cursor-default">
+        <a href="https://github.com/MartinPirate/spod_lite/tree/main/docs" target="_blank" rel="noopener" class="group glass rounded-2xl p-6 hover:border-sky-500/40 transition-all hover:-translate-y-0.5">
           <div class="flex items-start justify-between mb-3">
-            <div class="w-10 h-10 rounded-xl bg-slate-500/10 border border-slate-500/30 flex items-center justify-center">
-              <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center">
+              <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
             </div>
-            <span class="font-mono text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">SOON</span>
+            <svg class="w-5 h-5 text-slate-600 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
           </div>
           <div class="text-[15px] font-semibold mb-1">Read the docs</div>
-          <p class="text-[13px] text-slate-400">API reference, rules DSL, deployment guide.</p>
-        </div>
+          <p class="text-[13px] text-slate-400">Architecture, SDK reference, rules, realtime, files — eight guides on GitHub.</p>
+        </a>
 
-        <div class="glass rounded-2xl p-6 opacity-60 cursor-default">
+        <a href="https://github.com/MartinPirate/spod_lite" target="_blank" rel="noopener" class="group glass rounded-2xl p-6 hover:border-sky-500/40 transition-all hover:-translate-y-0.5">
           <div class="flex items-start justify-between mb-3">
-            <div class="w-10 h-10 rounded-xl bg-slate-500/10 border border-slate-500/30 flex items-center justify-center">
-              <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+            <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center">
+              <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
             </div>
-            <span class="font-mono text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">M1</span>
+            <svg class="w-5 h-5 text-slate-600 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
           </div>
-          <div class="text-[15px] font-semibold mb-1">Collection builder</div>
-          <p class="text-[13px] text-slate-400">Define collections visually — no YAML.</p>
-        </div>
+          <div class="text-[15px] font-semibold mb-1">Browse the source</div>
+          <p class="text-[13px] text-slate-400">Server, SDK, dashboard, and demo app in one repo. ~50 commits.</p>
+        </a>
 
         <div class="glass rounded-2xl p-6 opacity-60 cursor-default">
           <div class="flex items-start justify-between mb-3">
             <div class="w-10 h-10 rounded-xl bg-slate-500/10 border border-slate-500/30 flex items-center justify-center">
               <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
-            <span class="font-mono text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">M2</span>
+            <span class="font-mono text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">M3</span>
           </div>
-          <div class="text-[15px] font-semibold mb-1">End-user auth + rules</div>
-          <p class="text-[13px] text-slate-400">App users, OAuth, rules-scoped collection access.</p>
+          <div class="text-[15px] font-semibold mb-1">Record-level rules + OAuth</div>
+          <p class="text-[13px] text-slate-400">Owner-scoped access (<code class="font-mono text-slate-300">@record.owner = @request.auth.id</code>), OAuth providers.</p>
         </div>
       </div>
     </section>
