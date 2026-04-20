@@ -36,6 +36,7 @@ dependencies:
   serverpod_client: 3.4.7
   shared_preferences: ^2.3.0
   google_fonts: ^6.2.1
+  file_picker: ^8.1.2
 
 dev_dependencies:
   flutter_lints: '>=3.0.0 <7.0.0'

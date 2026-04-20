@@ -1,7 +1,26 @@
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:spod_lite_client/spod_lite_client.dart';
 
 import '../glass.dart';
+
+/// A file the user picked but hasn't uploaded yet. Uploaded after the
+/// record itself is created, so the file knows which record to attach to.
+class PendingFile {
+  final Uint8List bytes;
+  final String filename;
+  const PendingFile({required this.bytes, required this.filename});
+}
+
+/// Result from [RecordFormDialog]: the scalar record data plus any files
+/// the caller must upload after the record exists.
+class RecordFormResult {
+  final Map<String, dynamic> data;
+  final Map<String, PendingFile> files;
+  const RecordFormResult({required this.data, required this.files});
+}
 
 class RecordFormDialog extends StatefulWidget {
   final String collectionLabel;
@@ -21,6 +40,7 @@ class _RecordFormDialogState extends State<RecordFormDialog> {
   final Map<String, TextEditingController> _textControllers = {};
   final Map<String, bool> _boolValues = {};
   final Map<String, DateTime?> _dateValues = {};
+  final Map<String, PendingFile> _files = {};
   String? _error;
 
   @override
@@ -33,6 +53,9 @@ class _RecordFormDialogState extends State<RecordFormDialog> {
           break;
         case 'datetime':
           _dateValues[f.name] = null;
+          break;
+        case 'file':
+          // nothing — _files is empty until the user picks
           break;
         default:
           _textControllers[f.name] = TextEditingController();
@@ -48,9 +71,16 @@ class _RecordFormDialogState extends State<RecordFormDialog> {
     super.dispose();
   }
 
-  Map<String, dynamic>? _collect() {
+  RecordFormResult? _collect() {
     final data = <String, dynamic>{};
     for (final f in widget.fields) {
+      if (f.fieldType == 'file') {
+        if (f.required && _files[f.name] == null) {
+          setState(() => _error = '"${f.name}" is required.');
+          return null;
+        }
+        continue;
+      }
       dynamic value;
       switch (f.fieldType) {
         case 'bool':
@@ -82,7 +112,23 @@ class _RecordFormDialogState extends State<RecordFormDialog> {
       }
       if (value != null) data[f.name] = value;
     }
-    return data;
+    return RecordFormResult(data: data, files: Map.of(_files));
+  }
+
+  Future<void> _pickFile(String fieldName) async {
+    final result = await FilePicker.platform.pickFiles(
+      withData: true,
+      allowMultiple: false,
+    );
+    if (result == null || result.files.isEmpty) return;
+    final picked = result.files.first;
+    if (picked.bytes == null) return;
+    setState(() {
+      _files[fieldName] = PendingFile(
+        bytes: picked.bytes!,
+        filename: picked.name,
+      );
+    });
   }
 
   @override
@@ -159,9 +205,9 @@ class _RecordFormDialogState extends State<RecordFormDialog> {
                         width: 130,
                         child: LiquidButton(
                           onPressed: () {
-                            final data = _collect();
-                            if (data != null) {
-                              Navigator.of(context).pop(data);
+                            final result = _collect();
+                            if (result != null) {
+                              Navigator.of(context).pop(result);
                             }
                           },
                           child: const Text('Create'),
@@ -192,6 +238,14 @@ class _RecordFormDialogState extends State<RecordFormDialog> {
           value: _dateValues[f.name],
           required: f.required,
           onChanged: (d) => setState(() => _dateValues[f.name] = d),
+        );
+      case 'file':
+        return _FileField(
+          label: f.name,
+          required: f.required,
+          picked: _files[f.name],
+          onPick: () => _pickFile(f.name),
+          onClear: () => setState(() => _files.remove(f.name)),
         );
       case 'longtext':
         return GlassField(
@@ -318,6 +372,97 @@ class _DateField extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FileField extends StatelessWidget {
+  final String label;
+  final bool required;
+  final PendingFile? picked;
+  final VoidCallback onPick;
+  final VoidCallback onClear;
+
+  const _FileField({
+    required this.label,
+    required this.required,
+    required this.picked,
+    required this.onPick,
+    required this.onClear,
+  });
+
+  String _formatSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('${label.toUpperCase()}${required ? " *" : ""}',
+            style: const TextStyle(
+                fontSize: 11,
+                letterSpacing: 0.6,
+                fontWeight: FontWeight.w600,
+                color: Glass.textSubtle)),
+        const SizedBox(height: 8),
+        InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: picked == null ? onPick : null,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              color: Glass.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Glass.hairline),
+            ),
+            child: picked == null
+                ? Row(
+                    children: const [
+                      Icon(Icons.upload_file,
+                          size: 16, color: Glass.textSubtle),
+                      SizedBox(width: 10),
+                      Text('Choose file…',
+                          style: TextStyle(
+                              fontSize: 14, color: Glass.textFaint)),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      const Icon(Icons.insert_drive_file_outlined,
+                          size: 16, color: Glass.auroraA),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(picked!.filename,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: Glass.text)),
+                            Text(_formatSize(picked!.bytes.length),
+                                style: const TextStyle(
+                                    fontSize: 11, color: Glass.textFaint)),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 14),
+                        color: Glass.textSubtle,
+                        visualDensity: VisualDensity.compact,
+                        tooltip: 'Remove',
+                        onPressed: onClear,
+                      ),
+                    ],
+                  ),
           ),
         ),
       ],

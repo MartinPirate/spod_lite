@@ -6,7 +6,9 @@ import 'package:spod_lite_client/spod_lite_client.dart';
 import '../glass.dart';
 import '../main.dart' show client;
 
-const _fieldTypes = ['text', 'longtext', 'number', 'bool', 'datetime', 'json'];
+const _fieldTypes = [
+  'text', 'longtext', 'number', 'bool', 'datetime', 'json', 'file',
+];
 
 class SchemaEditorDialog extends StatefulWidget {
   const SchemaEditorDialog({super.key});

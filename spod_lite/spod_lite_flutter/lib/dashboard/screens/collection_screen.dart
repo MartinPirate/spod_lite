@@ -52,7 +52,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
   }
 
   Future<void> _createRecord(List<CollectionField> fields) async {
-    final data = await showGeneralDialog<Map<String, dynamic>>(
+    final result = await showGeneralDialog<RecordFormResult>(
       context: context,
       barrierDismissible: true,
       barrierLabel: 'New record',
@@ -69,9 +69,21 @@ class _CollectionScreenState extends State<CollectionScreen> {
         ),
       ),
     );
-    if (data == null) return;
+    if (result == null) return;
     try {
-      await client.records.create(widget.def.name, jsonEncode(data));
+      final raw =
+          await client.records.create(widget.def.name, jsonEncode(result.data));
+      final record = jsonDecode(raw) as Map<String, dynamic>;
+      final id = record['id'] as int;
+      for (final entry in result.files.entries) {
+        await client.files.upload(
+          widget.def.name,
+          id,
+          entry.key,
+          ByteData.sublistView(entry.value.bytes),
+          entry.value.filename,
+        );
+      }
       _refresh();
     } catch (e) {
       if (!mounted) return;
@@ -646,10 +658,9 @@ class _DataRowState extends State<_DataRow> {
             ),
             for (final f in widget.fields)
               Expanded(
-                child: Text(
-                  _formatValue(widget.record[f.name], f.fieldType),
-                  style: const TextStyle(fontSize: 13, color: Glass.text),
-                  overflow: TextOverflow.ellipsis,
+                child: _CellValue(
+                  value: widget.record[f.name],
+                  type: f.fieldType,
                 ),
               ),
             SizedBox(
@@ -681,20 +692,86 @@ class _DataRowState extends State<_DataRow> {
     );
   }
 
-  String _formatValue(dynamic value, String type) {
-    if (value == null) return '—';
-    switch (type) {
-      case 'bool':
-        return value == true ? 'true' : 'false';
-      case 'datetime':
-        return _formatDate(value);
-      case 'number':
-        return value.toString();
-      case 'json':
-        return jsonEncode(value);
-      default:
-        return value.toString();
+}
+
+class _CellValue extends StatelessWidget {
+  final dynamic value;
+  final String type;
+  const _CellValue({required this.value, required this.type});
+
+  static const _imageExts = {'.png', '.jpg', '.jpeg', '.gif', '.webp'};
+
+  bool _looksLikeImage(String url) {
+    final lower = url.toLowerCase();
+    for (final ext in _imageExts) {
+      if (lower.contains(ext)) return true;
     }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (value == null) {
+      return const Text('—',
+          style: TextStyle(fontSize: 13, color: Glass.textFaint));
+    }
+    if (type == 'file' && value is String) {
+      final url = value as String;
+      if (_looksLikeImage(url)) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Image.network(
+                url,
+                width: 28,
+                height: 28,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const Icon(Icons.broken_image,
+                    size: 16, color: Glass.textFaint),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                url.split('/').last,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 12, color: Glass.auroraA),
+              ),
+            ),
+          ],
+        );
+      }
+      return Row(
+        children: [
+          const Icon(Icons.insert_drive_file_outlined,
+              size: 14, color: Glass.auroraA),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              url.split('/').last,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  const TextStyle(fontSize: 12.5, color: Glass.auroraA),
+            ),
+          ),
+        ],
+      );
+    }
+    final text = switch (type) {
+      'bool' => value == true ? 'true' : 'false',
+      'datetime' => _formatDate(value),
+      'number' => value.toString(),
+      'json' => jsonEncode(value),
+      _ => value.toString(),
+    };
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 13, color: Glass.text),
+      overflow: TextOverflow.ellipsis,
+    );
   }
 }
 
