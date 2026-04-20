@@ -1,0 +1,14 @@
+### A dashboard session token issued after successful admin sign-in.
+class: AdminSession
+table: admin_session
+
+fields:
+  token: String
+  adminUserId: int
+  createdAt: DateTime?, defaultPersist=now
+  expiresAt: DateTime
+
+indexes:
+  admin_session_token_uidx:
+    fields: token
+    unique: true

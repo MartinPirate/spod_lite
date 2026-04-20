@@ -1,0 +1,13 @@
+### A superuser with access to the Serverpod Lite dashboard.
+class: AdminUser
+table: admin_user
+
+fields:
+  email: String
+  passwordHash: String
+  createdAt: DateTime?, defaultPersist=now
+
+indexes:
+  admin_user_email_uidx:
+    fields: email
+    unique: true
