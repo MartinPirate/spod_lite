@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 /// Plain DTO for a collection definition. Mirrors the server's
 /// [CollectionDef] without leaking the generated type.
@@ -141,8 +142,9 @@ abstract final class FieldType {
   static const bool$ = 'bool';
   static const datetime = 'datetime';
   static const json = 'json';
+  static const file = 'file';
 
-  static const all = [text, longtext, number, bool$, datetime, json];
+  static const all = [text, longtext, number, bool$, datetime, json, file];
 }
 
 /// Access to the Serverpod Lite dynamic-collections API.
@@ -152,8 +154,13 @@ abstract final class FieldType {
 class SpodLiteCollections {
   final dynamic _collectionsEndpoint;
   final dynamic _recordsEndpoint;
+  final dynamic _filesEndpoint;
 
-  SpodLiteCollections(this._collectionsEndpoint, this._recordsEndpoint);
+  SpodLiteCollections(
+    this._collectionsEndpoint,
+    this._recordsEndpoint,
+    this._filesEndpoint,
+  );
 
   // --- Collection management ---
 
@@ -211,7 +218,7 @@ class SpodLiteCollections {
 
   /// Fluent handle for records inside a named collection.
   CollectionRef collection(String name) =>
-      CollectionRef._(_recordsEndpoint, name);
+      CollectionRef._(_recordsEndpoint, _filesEndpoint, name);
 }
 
 /// Kinds of realtime change a collection emits.
@@ -258,11 +265,12 @@ class RecordChange {
 /// Scoped record-level API for one collection.
 class CollectionRef {
   final dynamic _records;
+  final dynamic _files;
 
   /// The collection this ref targets.
   final String name;
 
-  CollectionRef._(this._records, this.name);
+  CollectionRef._(this._records, this._files, this.name);
 
   Future<List<Map<String, dynamic>>> list({
     int page = 1,
@@ -304,5 +312,33 @@ class CollectionRef {
   Stream<RecordChange> watch() {
     final raw = _records.watch(name) as Stream;
     return raw.map((e) => RecordChange.fromRaw(e));
+  }
+
+  /// Upload a file into the `fieldName` field of record [recordId].
+  /// Returns the public URL that's now stored on the record. Respects
+  /// the collection's `create` rule.
+  Future<String> uploadFile({
+    required int recordId,
+    required String fieldName,
+    required Uint8List bytes,
+    required String filename,
+  }) async {
+    final byteData = ByteData.sublistView(bytes);
+    return await _files.upload(
+      name,
+      recordId,
+      fieldName,
+      byteData,
+      filename,
+    ) as String;
+  }
+
+  /// Remove the file attached to `fieldName` on record [recordId] and
+  /// clear the column. Respects the collection's `delete` rule.
+  Future<void> deleteFile({
+    required int recordId,
+    required String fieldName,
+  }) async {
+    await _files.delete(name, recordId, fieldName);
   }
 }

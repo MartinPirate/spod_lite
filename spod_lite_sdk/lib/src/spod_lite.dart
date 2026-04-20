@@ -62,6 +62,7 @@ class SpodLite<C> {
     required EndpointAccessor<C> userAuthEndpoint,
     required EndpointAccessor<C> collectionsEndpoint,
     required EndpointAccessor<C> recordsEndpoint,
+    required EndpointAccessor<C> filesEndpoint,
     String adminTokenPrefsKey = _adminPrefsKey,
     String userTokenPrefsKey = _userPrefsKey,
   })  : _adminStore = SpodLiteTokenStore(prefsKey: adminTokenPrefsKey),
@@ -77,6 +78,7 @@ class SpodLite<C> {
     collections = SpodLiteCollections(
       collectionsEndpoint(client),
       recordsEndpoint(client),
+      filesEndpoint(client),
     );
   }
 
