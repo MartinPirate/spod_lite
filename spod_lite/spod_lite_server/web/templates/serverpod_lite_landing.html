@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Serverpod Lite — your backend is live</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            ink: {
+              950: '#05070A',
+              900: '#0B0F14',
+              850: '#0F141B',
+              800: '#141A22',
+              700: '#1C242F',
+              600: '#232C38',
+              500: '#343F4C',
+            },
+            sky: {
+              accent: '#38BDF8',
+            },
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.6s ease-out',
+            'fade-in': 'fadeIn 0.8s ease-out',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(8px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+          },
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      html, body { @apply bg-ink-950 text-slate-100 font-sans antialiased; }
+    }
+    @layer components {
+      .bg-grid {
+        background-image:
+          radial-gradient(circle at 1px 1px, rgba(56,189,248,0.08) 1px, transparent 0);
+        background-size: 24px 24px;
+      }
+      .bg-radial-fade {
+        background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(56,189,248,0.15), transparent 60%);
+      }
+      .glass {
+        @apply bg-ink-850/60 border border-ink-600/60 backdrop-blur-xl;
+      }
+      .glow-btn {
+        box-shadow: 0 0 0 1px rgba(56,189,248,0.3), 0 8px 32px -8px rgba(56,189,248,0.5);
+      }
+      .glow-btn:hover {
+        box-shadow: 0 0 0 1px rgba(56,189,248,0.6), 0 10px 40px -8px rgba(56,189,248,0.65);
+      }
+    }
+  </style>
+</head>
+<body class="relative overflow-x-hidden">
+  <!-- background layers -->
+  <div class="absolute inset-0 bg-grid opacity-40 pointer-events-none"></div>
+  <div class="absolute inset-0 bg-radial-fade pointer-events-none"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 pt-8 pb-24">
+
+    <!-- top nav -->
+    <nav class="flex items-center justify-between animate-fade-in">
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center text-black font-extrabold text-lg shadow-lg shadow-sky-500/30 group-hover:shadow-sky-500/50 transition-all -tracking-wider">
+          S
+        </div>
+        <div class="flex flex-col leading-tight">
+          <span class="text-[15px] font-semibold tracking-tight">Serverpod Lite</span>
+          <span class="text-[11px] text-slate-500">PocketBase-grade DX · Serverpod-grade types</span>
+        </div>
+      </a>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-ink-800 border border-ink-600 text-slate-400">
+          {{runmode}}
+        </span>
+        <span class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-center gap-1.5">
+          <span class="relative flex w-1.5 h-1.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60"></span>
+            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
+          </span>
+          running
+        </span>
+      </div>
+    </nav>
+
+    <!-- hero -->
+    <section class="pt-24 pb-16 text-center animate-fade-up">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-ink-600 bg-ink-850/60 backdrop-blur mb-8">
+        <span class="font-mono text-[11px] text-sky-400">v0.1.0</span>
+        <span class="w-px h-3 bg-ink-600"></span>
+        <span class="text-[12px] text-slate-400">M1 · dashboard + auth + SDK shipped</span>
+      </div>
+      <h1 class="text-5xl md:text-7xl font-bold tracking-tighter leading-[1.05] mb-6">
+        Your backend is
+        <span class="bg-gradient-to-r from-sky-300 via-sky-400 to-cyan-300 bg-clip-text text-transparent">
+          live.
+        </span>
+      </h1>
+      <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
+        A Dart server, a typed client, an admin dashboard, and an SDK.<br class="hidden md:block">
+        One stack. One binary. No YAML.
+      </p>
+      <div class="flex items-center justify-center gap-3 flex-wrap">
+        <a href="{{dashboardUrl}}"
+           class="glow-btn inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-sky-400 hover:bg-sky-300 text-black font-semibold text-[14px] transition-all hover:-translate-y-0.5">
+          Open dashboard
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+        <a href="#sdk"
+           class="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-ink-600 hover:border-ink-500 bg-ink-850/40 hover:bg-ink-800/60 text-slate-200 font-medium text-[14px] transition-all backdrop-blur">
+          See the SDK
+        </a>
+      </div>
+    </section>
+
+    <!-- status grid -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-24">
+      <div class="glass rounded-2xl p-6 hover:border-ink-500 transition-colors">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center">
+            <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <span class="text-[10px] font-semibold tracking-widest text-slate-500 uppercase">API</span>
+        </div>
+        <div class="font-mono text-[13px] text-slate-200 mb-1">{{apiUrl}}</div>
+        <p class="text-[12.5px] text-slate-500">All generated endpoints live here.</p>
+      </div>
+
+      <div class="glass rounded-2xl p-6 hover:border-ink-500 transition-colors">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg>
+          </div>
+          <span class="text-[10px] font-semibold tracking-widest text-slate-500 uppercase">Admin</span>
+        </div>
+        <div class="text-[14px] font-semibold text-slate-200 mb-1">{{adminState}}</div>
+        <p class="text-[12.5px] text-slate-500">{{adminHint}}</p>
+      </div>
+
+      <div class="glass rounded-2xl p-6 hover:border-ink-500 transition-colors">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-lg bg-slate-500/10 border border-slate-500/30 flex items-center justify-center">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          </div>
+          <span class="text-[10px] font-semibold tracking-widest text-slate-500 uppercase">Version</span>
+        </div>
+        <div class="font-mono text-[13px] text-slate-200 mb-1">Serverpod {{version}}</div>
+        <p class="text-[12.5px] text-slate-500">Dart {{dartVersion}}</p>
+      </div>
+    </section>
+
+    <!-- sdk code -->
+    <section id="sdk" class="mb-24 scroll-mt-12">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+          Build a client in
+          <span class="bg-gradient-to-r from-sky-300 to-cyan-300 bg-clip-text text-transparent">three lines</span>.
+        </h2>
+        <p class="text-slate-400 max-w-xl mx-auto">
+          The <code class="font-mono text-sky-400">spod_lite_sdk</code> package wraps the typed
+          Serverpod client with auth sugar. One package. Every Flutter platform.
+        </p>
+      </div>
+      <div class="glass rounded-2xl overflow-hidden">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-ink-600/60 bg-ink-900/40">
+          <div class="flex gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-ink-600"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-ink-600"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-ink-600"></span>
+          </div>
+          <span class="ml-2 font-mono text-[11px] text-slate-500">lib/main.dart</span>
+        </div>
+        <pre class="p-6 font-mono text-[13px] leading-[1.8] overflow-x-auto"><code><span class="text-pink-400">import</span> <span class="text-emerald-300">'package:spod_lite_sdk/spod_lite_sdk.dart'</span>;
+
+<span class="text-pink-400">final</span> spod = <span class="text-sky-400">SpodLite</span>(<span class="text-emerald-300">'{{apiUrl}}'</span>);
+<span class="text-pink-400">await</span> spod.auth.<span class="text-yellow-300">signInAsAdmin</span>(<span class="text-emerald-300">'you@example.com'</span>, <span class="text-emerald-300">'password'</span>);
+
+<span class="text-slate-500 italic">// Typed — your IDE knows every field</span>
+<span class="text-pink-400">final</span> posts = <span class="text-pink-400">await</span> spod.client.posts.<span class="text-yellow-300">listPosts</span>();</code></pre>
+      </div>
+    </section>
+
+    <!-- next steps -->
+    <section class="mb-24">
+      <div class="flex items-end justify-between mb-8">
+        <h2 class="text-2xl md:text-3xl font-bold tracking-tight">What's next</h2>
+        <span class="text-[12px] text-slate-500 font-mono">roadmap</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <a href="{{dashboardUrl}}" class="group glass rounded-2xl p-6 hover:border-sky-500/40 transition-all hover:-translate-y-0.5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center">
+              <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            </div>
+            <svg class="w-5 h-5 text-slate-600 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </div>
+          <div class="text-[15px] font-semibold mb-1">Create your first collection</div>
+          <p class="text-[13px] text-slate-400">Schema, rules, record browser — all in the dashboard.</p>
+        </a>
+
+        <div class="glass rounded-2xl p-6 opacity-60 cursor-default">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-slate-500/10 border border-slate-500/30 flex items-center justify-center">
+              <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            </div>
+            <span class="font-mono text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">SOON</span>
+          </div>
+          <div class="text-[15px] font-semibold mb-1">Read the docs</div>
+          <p class="text-[13px] text-slate-400">API reference, rules DSL, deployment guide.</p>
+        </div>
+
+        <div class="glass rounded-2xl p-6 opacity-60 cursor-default">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-slate-500/10 border border-slate-500/30 flex items-center justify-center">
+              <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+            </div>
+            <span class="font-mono text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">M1</span>
+          </div>
+          <div class="text-[15px] font-semibold mb-1">Collection builder</div>
+          <p class="text-[13px] text-slate-400">Define collections visually — no YAML.</p>
+        </div>
+
+        <div class="glass rounded-2xl p-6 opacity-60 cursor-default">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-slate-500/10 border border-slate-500/30 flex items-center justify-center">
+              <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <span class="font-mono text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">M2</span>
+          </div>
+          <div class="text-[15px] font-semibold mb-1">End-user auth + rules</div>
+          <p class="text-[13px] text-slate-400">App users, OAuth, rules-scoped collection access.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- footer -->
+    <footer class="pt-8 border-t border-ink-600/40 flex items-center justify-between text-[12px] text-slate-500 flex-wrap gap-4">
+      <div class="font-mono">served · {{served}}</div>
+      <div class="flex items-center gap-4">
+        <a href="https://serverpod.dev" class="hover:text-sky-400 transition-colors">Serverpod</a>
+        <span class="text-ink-600">·</span>
+        <a href="https://flutter.dev" class="hover:text-sky-400 transition-colors">Flutter</a>
+        <span class="text-ink-600">·</span>
+        <a href="https://pub.dev/packages/serverpod" class="hover:text-sky-400 transition-colors">pub.dev</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
