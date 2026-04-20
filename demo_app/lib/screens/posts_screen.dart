@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:spod_lite_client/spod_lite_client.dart';
 
@@ -13,17 +15,60 @@ class PostsScreen extends StatefulWidget {
 }
 
 class _PostsScreenState extends State<PostsScreen> {
-  late Future<List<Post>> _future;
+  List<Post>? _posts;
+  Object? _error;
+  StreamSubscription<Post>? _liveSub;
+  bool _justReceived = false;
+  Timer? _pulseTimer;
 
   @override
   void initState() {
     super.initState();
-    _future = spod.client.posts.listPosts();
+    _refresh();
+    _subscribeLive();
   }
 
-  void _refresh() => setState(() {
-        _future = spod.client.posts.listPosts();
+  @override
+  void dispose() {
+    _liveSub?.cancel();
+    _pulseTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    try {
+      final list = await spod.client.posts.listPosts();
+      if (!mounted) return;
+      setState(() {
+        _posts = list;
+        _error = null;
       });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e);
+    }
+  }
+
+  void _subscribeLive() {
+    _liveSub?.cancel();
+    _liveSub = spod.client.posts.watchPosts().listen(
+      (post) {
+        if (!mounted) return;
+        setState(() {
+          _posts = [post, ...?_posts?.where((p) => p.id != post.id)];
+          _justReceived = true;
+        });
+        _pulseTimer?.cancel();
+        _pulseTimer = Timer(const Duration(milliseconds: 1200), () {
+          if (mounted) setState(() => _justReceived = false);
+        });
+      },
+      onError: (_) {
+        // Silently reconnect on the next app resume — the fallback is
+        // manual refresh which users already have.
+      },
+    );
+  }
 
   Future<void> _create() async {
     final result = await showGeneralDialog<({String title, String body})>(
@@ -46,8 +91,8 @@ class _PostsScreenState extends State<PostsScreen> {
     );
     if (result == null || result.title.trim().isEmpty) return;
     try {
+      // Don't refresh — the realtime stream will push this post back to us.
       await spod.client.posts.createPost(result.title, result.body);
-      _refresh();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -68,23 +113,13 @@ class _PostsScreenState extends State<PostsScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              _TopBar(onRefresh: _refresh, onSignOut: widget.onSignOut),
+              _TopBar(
+                onRefresh: _refresh,
+                onSignOut: widget.onSignOut,
+                livePulse: _justReceived,
+              ),
               Expanded(
-                child: FutureBuilder<List<Post>>(
-                  future: _future,
-                  builder: (context, snap) {
-                    if (snap.connectionState != ConnectionState.done) {
-                      return const _Loading();
-                    }
-                    if (snap.hasError) {
-                      return _ErrorView(
-                          error: snap.error!, onRetry: _refresh);
-                    }
-                    final posts = snap.data ?? [];
-                    if (posts.isEmpty) return _Empty(onCreate: _create);
-                    return _Feed(posts: posts);
-                  },
-                ),
+                child: _body(),
               ),
             ],
           ),
@@ -111,12 +146,27 @@ class _PostsScreenState extends State<PostsScreen> {
       ),
     );
   }
+
+  Widget _body() {
+    if (_error != null && _posts == null) {
+      return _ErrorView(error: _error!, onRetry: _refresh);
+    }
+    if (_posts == null) return const _Loading();
+    final posts = _posts!;
+    if (posts.isEmpty) return _Empty(onCreate: _create);
+    return _Feed(posts: posts);
+  }
 }
 
 class _TopBar extends StatelessWidget {
   final VoidCallback onRefresh;
   final VoidCallback onSignOut;
-  const _TopBar({required this.onRefresh, required this.onSignOut});
+  final bool livePulse;
+  const _TopBar({
+    required this.onRefresh,
+    required this.onSignOut,
+    required this.livePulse,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +188,7 @@ class _TopBar extends StatelessWidget {
                       letterSpacing: -0.3,
                       color: Glass.text)),
               const SizedBox(width: 10),
-              _LiveDot(),
+              _LiveDot(pulse: livePulse),
               const Spacer(),
               _GlassIcon(
                   icon: Icons.refresh, tooltip: 'Refresh', onTap: onRefresh),
@@ -153,6 +203,9 @@ class _TopBar extends StatelessWidget {
 }
 
 class _LiveDot extends StatefulWidget {
+  final bool pulse;
+  const _LiveDot({required this.pulse});
+
   @override
   State<_LiveDot> createState() => _LiveDotState();
 }
@@ -177,12 +230,19 @@ class _LiveDotState extends State<_LiveDot>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final accent = widget.pulse ? Glass.auroraC : Glass.auroraD;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
+        color: widget.pulse
+            ? accent.withValues(alpha: 0.18)
+            : Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Glass.hairline),
+        border: Border.all(
+            color: widget.pulse
+                ? accent.withValues(alpha: 0.5)
+                : Glass.hairline),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -193,26 +253,27 @@ class _LiveDotState extends State<_LiveDot>
               builder: (_, _) {
                 final s = 4 + 8 * _c.value;
                 return Container(
-                  width: s, height: s,
+                  width: s,
+                  height: s,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Glass.auroraD
-                        .withValues(alpha: 0.5 * (1 - _c.value)),
+                    color: accent.withValues(alpha: 0.5 * (1 - _c.value)),
                   ),
                 );
               },
             ),
             Container(
-              width: 6, height: 6,
-              decoration: const BoxDecoration(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Glass.auroraD,
+                color: accent,
               ),
             ),
           ]),
           const SizedBox(width: 7),
-          const Text('LIVE',
-              style: TextStyle(
+          Text(widget.pulse ? 'NEW' : 'LIVE',
+              style: const TextStyle(
                   fontSize: 10,
                   letterSpacing: 0.8,
                   fontWeight: FontWeight.w700,
