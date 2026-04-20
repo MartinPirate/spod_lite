@@ -1,13 +1,13 @@
 import 'package:serverpod/serverpod.dart';
-import '../admin/admin_authentication_handler.dart';
 import '../generated/protocol.dart';
 
+/// Legacy demo endpoint kept around for the demo app. Gated via
+/// `requireLogin` so any authenticated caller (admin or end-user) can use
+/// it. New work should prefer the generic collections/records API which
+/// supports per-op rules.
 class PostsEndpoint extends Endpoint {
   @override
   bool get requireLogin => true;
-
-  @override
-  Set<Scope> get requiredScopes => {adminScope};
 
   Future<List<Post>> listPosts(Session session) async {
     return Post.db.find(
