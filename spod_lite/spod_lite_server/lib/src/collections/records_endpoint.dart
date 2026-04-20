@@ -5,6 +5,8 @@ import '../generated/protocol.dart';
 import 'identifier_safety.dart';
 import 'rule_enforcer.dart';
 
+String _eventChannel(String collectionName) => 'records:$collectionName';
+
 /// Generic CRUD over user-defined collections.
 ///
 /// Records are passed across the wire as JSON strings because Serverpod's
@@ -111,7 +113,11 @@ class RecordsEndpoint extends Endpoint {
       '(${placeholders.join(", ")}) returning *',
       parameters: QueryParameters.named(params),
     );
-    return jsonEncode(_normalize(result.first.toColumnMap()));
+    final row = _normalize(result.first.toColumnMap());
+    final json = jsonEncode(row);
+    await _emit(session, collectionName, 'created',
+        recordId: row['id'] as int?, recordJson: json);
+    return json;
   }
 
   Future<String> update(
@@ -152,7 +158,11 @@ class RecordsEndpoint extends Endpoint {
       throw _NotFoundException(
           'Record $id not found in "$collectionName".');
     }
-    return jsonEncode(_normalize(result.first.toColumnMap()));
+    final row = _normalize(result.first.toColumnMap());
+    final json = jsonEncode(row);
+    await _emit(session, collectionName, 'updated',
+        recordId: id, recordJson: json);
+    return json;
   }
 
   Future<void> delete(
@@ -168,6 +178,40 @@ class RecordsEndpoint extends Endpoint {
     await session.db.unsafeExecute(
       'delete from $table where "id" = @id',
       parameters: QueryParameters.named({'id': id}),
+    );
+    await _emit(session, collectionName, 'deleted', recordId: id);
+  }
+
+  /// Live stream of record events for a collection. Enforces the same
+  /// rule as `list`.
+  Stream<RecordEvent> watch(
+    Session session,
+    String collectionName,
+  ) async* {
+    assertValidIdentifier(collectionName, kind: 'collection name');
+    final def = await _requireCollection(session, collectionName);
+    await enforceRule(session, def.listRule, operation: 'watch');
+    yield* session.messages
+        .createStream<RecordEvent>(_eventChannel(collectionName));
+  }
+
+  Future<void> _emit(
+    Session session,
+    String collectionName,
+    String type, {
+    required int? recordId,
+    String? recordJson,
+  }) async {
+    if (recordId == null) return;
+    await session.messages.postMessage(
+      _eventChannel(collectionName),
+      RecordEvent(
+        type: type,
+        collectionName: collectionName,
+        recordId: recordId,
+        recordJson: recordJson,
+        at: DateTime.now().toUtc(),
+      ),
     );
   }
 
