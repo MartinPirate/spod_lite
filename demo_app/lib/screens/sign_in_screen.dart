@@ -29,8 +29,27 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
+  String? _localValidate() {
+    final email = _email.text.trim();
+    final password = _password.text;
+    if (email.isEmpty) return 'Email is required.';
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      return 'That doesn\'t look like a valid email.';
+    }
+    if (password.isEmpty) return 'Password is required.';
+    if (_mode == _Mode.signUp && password.length < 8) {
+      return 'Password must be at least 8 characters.';
+    }
+    return null;
+  }
+
   Future<void> _submit() async {
     if (_submitting) return;
+    final localError = _localValidate();
+    if (localError != null) {
+      setState(() => _error = localError);
+      return;
+    }
     setState(() {
       _submitting = true;
       _error = null;
@@ -44,6 +63,13 @@ class _SignInScreenState extends State<SignInScreen> {
       widget.onSignedIn();
     } on SpodLiteUserAuthException catch (e) {
       setState(() => _error = e.message);
+    } catch (e) {
+      // ServerpodClientException or anything else — show something
+      // readable instead of the raw class name.
+      final s = e.toString();
+      final m =
+          RegExp(r'ServerpodClientException[^:]*:\s*(.+)').firstMatch(s);
+      setState(() => _error = (m?.group(1) ?? s).trim());
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
