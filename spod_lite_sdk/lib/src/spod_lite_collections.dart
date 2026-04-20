@@ -6,12 +6,14 @@ class CollectionInfo {
   final int id;
   final String name;
   final String label;
+  final CollectionRules rules;
   final DateTime? createdAt;
 
   const CollectionInfo({
     required this.id,
     required this.name,
     required this.label,
+    required this.rules,
     this.createdAt,
   });
 
@@ -19,11 +21,69 @@ class CollectionInfo {
         id: raw.id as int,
         name: raw.name as String,
         label: raw.label as String,
+        rules: CollectionRules(
+          list: raw.listRule as String,
+          view: raw.viewRule as String,
+          create: raw.createRule as String,
+          update: raw.updateRule as String,
+          delete: raw.deleteRule as String,
+        ),
         createdAt: raw.createdAt as DateTime?,
       );
 
   @override
   String toString() => 'CollectionInfo($name)';
+}
+
+/// Rule modes every collection carries per operation.
+abstract final class RuleMode {
+  static const public = 'public';
+  static const authed = 'authed';
+  static const admin = 'admin';
+
+  static const all = [public, authed, admin];
+}
+
+/// The five per-op access rules on a collection.
+class CollectionRules {
+  final String list;
+  final String view;
+  final String create;
+  final String update;
+  final String delete;
+
+  const CollectionRules({
+    required this.list,
+    required this.view,
+    required this.create,
+    required this.update,
+    required this.delete,
+  });
+
+  /// Returns a partial-update JSON payload for [SpodLiteCollections.updateRules].
+  /// Only the differing rules are included, minimizing the write.
+  Map<String, String> diffFrom(CollectionRules other) => {
+        if (list != other.list) 'listRule': list,
+        if (view != other.view) 'viewRule': view,
+        if (create != other.create) 'createRule': create,
+        if (update != other.update) 'updateRule': update,
+        if (delete != other.delete) 'deleteRule': delete,
+      };
+
+  CollectionRules copyWith({
+    String? list,
+    String? view,
+    String? create,
+    String? update,
+    String? delete,
+  }) =>
+      CollectionRules(
+        list: list ?? this.list,
+        view: view ?? this.view,
+        create: create ?? this.create,
+        update: update ?? this.update,
+        delete: delete ?? this.delete,
+      );
 }
 
 /// Plain DTO for a field definition on a collection.
@@ -125,6 +185,28 @@ class SpodLiteCollections {
 
   Future<void> delete(String name) async {
     await _collectionsEndpoint.delete(name);
+  }
+
+  /// Update a subset of the per-op rules on an existing collection.
+  /// Pass only the rules you want to change.
+  Future<CollectionInfo> updateRules(
+    String name, {
+    String? list,
+    String? view,
+    String? create,
+    String? update,
+    String? delete,
+  }) async {
+    final payload = <String, String>{
+      if (list != null) 'listRule': list,
+      if (view != null) 'viewRule': view,
+      if (create != null) 'createRule': create,
+      if (update != null) 'updateRule': update,
+      if (delete != null) 'deleteRule': delete,
+    };
+    final raw =
+        await _collectionsEndpoint.updateRules(name, jsonEncode(payload));
+    return CollectionInfo.fromRaw(raw);
   }
 
   /// Fluent handle for records inside a named collection.
