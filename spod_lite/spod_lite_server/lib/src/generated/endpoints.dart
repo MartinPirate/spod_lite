@@ -16,12 +16,10 @@ import '../collections/collections_endpoint.dart' as _i3;
 import '../collections/records_endpoint.dart' as _i4;
 import '../greetings/greeting_endpoint.dart' as _i5;
 import '../posts/posts_endpoint.dart' as _i6;
-import 'package:spod_lite_server/src/generated/collections/collection_field_spec.dart'
-    as _i7;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _i8;
+    as _i7;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
-    as _i9;
+    as _i8;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -226,9 +224,9 @@ class Endpoints extends _i1.EndpointDispatch {
               type: _i1.getType<String>(),
               nullable: false,
             ),
-            'specs': _i1.ParameterDescription(
-              name: 'specs',
-              type: _i1.getType<List<_i7.CollectionFieldSpec>>(),
+            'specsJson': _i1.ParameterDescription(
+              name: 'specsJson',
+              type: _i1.getType<String>(),
               nullable: false,
             ),
           },
@@ -241,7 +239,7 @@ class Endpoints extends _i1.EndpointDispatch {
                     session,
                     params['name'],
                     params['label'],
-                    params['specs'],
+                    params['specsJson'],
                   ),
         ),
         'delete': _i1.MethodConnector(
@@ -503,9 +501,9 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _i8.Endpoints()
+    modules['serverpod_auth_idp'] = _i7.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i9.Endpoints()
+    modules['serverpod_auth_core'] = _i8.Endpoints()
       ..initializeEndpoints(server);
   }
 }

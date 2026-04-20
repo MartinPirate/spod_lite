@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:serverpod/serverpod.dart';
 import '../admin/admin_authentication_handler.dart';
 import '../generated/protocol.dart';
@@ -45,13 +47,17 @@ class CollectionsEndpoint extends Endpoint {
   /// `CREATE TABLE` atomically. If any step fails the whole thing
   /// rolls back so we don't orphan a definition without a table (or
   /// vice versa).
+  /// `specsJson` must decode to a JSON array of `{name, fieldType, required}`
+  /// objects. JSON on the wire keeps this endpoint free of generated-type
+  /// dependencies so any Serverpod client can call it.
   Future<CollectionDef> create(
     Session session,
     String name,
     String label,
-    List<CollectionFieldSpec> specs,
+    String specsJson,
   ) async {
     assertValidIdentifier(name, kind: 'collection name');
+    final specs = _decodeSpecs(specsJson);
     for (final s in specs) {
       assertValidIdentifier(s.name, kind: 'field name');
       if (!isKnownFieldType(s.fieldType)) {
@@ -167,4 +173,34 @@ class CollectionsEndpoint extends Endpoint {
       session.log('[collections] dropped "$name"');
     });
   }
+
+  List<_FieldSpec> _decodeSpecs(String json) {
+    final decoded = jsonDecode(json);
+    if (decoded is! List) {
+      throw InvalidIdentifierException(
+          'Field specs must be a JSON array.');
+    }
+    return decoded.map((item) {
+      if (item is! Map) {
+        throw InvalidIdentifierException(
+            'Each field spec must be a JSON object.');
+      }
+      return _FieldSpec(
+        name: (item['name'] ?? '').toString(),
+        fieldType: (item['fieldType'] ?? '').toString(),
+        required: item['required'] == true,
+      );
+    }).toList();
+  }
+}
+
+class _FieldSpec {
+  final String name;
+  final String fieldType;
+  final bool required;
+  _FieldSpec({
+    required this.name,
+    required this.fieldType,
+    required this.required,
+  });
 }

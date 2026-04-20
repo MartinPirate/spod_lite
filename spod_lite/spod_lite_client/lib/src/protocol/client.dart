@@ -17,15 +17,13 @@ import 'package:spod_lite_client/src/protocol/collections/collection_def.dart'
     as _i4;
 import 'package:spod_lite_client/src/protocol/collections/collection_field.dart'
     as _i5;
-import 'package:spod_lite_client/src/protocol/collections/collection_field_spec.dart'
-    as _i6;
-import 'package:spod_lite_client/src/protocol/greetings/greeting.dart' as _i7;
-import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i8;
+import 'package:spod_lite_client/src/protocol/greetings/greeting.dart' as _i6;
+import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i7;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
-    as _i9;
+    as _i8;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
-    as _i10;
-import 'protocol.dart' as _i11;
+    as _i9;
+import 'protocol.dart' as _i10;
 
 /// {@category Endpoint}
 class EndpointAdminAuth extends _i1.EndpointRef {
@@ -116,17 +114,20 @@ class EndpointCollections extends _i1.EndpointRef {
   /// `CREATE TABLE` atomically. If any step fails the whole thing
   /// rolls back so we don't orphan a definition without a table (or
   /// vice versa).
+  /// `specsJson` must decode to a JSON array of `{name, fieldType, required}`
+  /// objects. JSON on the wire keeps this endpoint free of generated-type
+  /// dependencies so any Serverpod client can call it.
   _i2.Future<_i4.CollectionDef> create(
     String name,
     String label,
-    List<_i6.CollectionFieldSpec> specs,
+    String specsJson,
   ) => caller.callServerEndpoint<_i4.CollectionDef>(
     'collections',
     'create',
     {
       'name': name,
       'label': label,
-      'specs': specs,
+      'specsJson': specsJson,
     },
   );
 
@@ -238,8 +239,8 @@ class EndpointGreeting extends _i1.EndpointRef {
   String get name => 'greeting';
 
   /// Returns a personalized greeting message: "Hello {name}".
-  _i2.Future<_i7.Greeting> hello(String name) =>
-      caller.callServerEndpoint<_i7.Greeting>(
+  _i2.Future<_i6.Greeting> hello(String name) =>
+      caller.callServerEndpoint<_i6.Greeting>(
         'greeting',
         'hello',
         {'name': name},
@@ -253,17 +254,17 @@ class EndpointPosts extends _i1.EndpointRef {
   @override
   String get name => 'posts';
 
-  _i2.Future<List<_i8.Post>> listPosts() =>
-      caller.callServerEndpoint<List<_i8.Post>>(
+  _i2.Future<List<_i7.Post>> listPosts() =>
+      caller.callServerEndpoint<List<_i7.Post>>(
         'posts',
         'listPosts',
         {},
       );
 
-  _i2.Future<_i8.Post> createPost(
+  _i2.Future<_i7.Post> createPost(
     String title,
     String body,
-  ) => caller.callServerEndpoint<_i8.Post>(
+  ) => caller.callServerEndpoint<_i7.Post>(
     'posts',
     'createPost',
     {
@@ -281,13 +282,13 @@ class EndpointPosts extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    serverpod_auth_idp = _i9.Caller(client);
-    serverpod_auth_core = _i10.Caller(client);
+    serverpod_auth_idp = _i8.Caller(client);
+    serverpod_auth_core = _i9.Caller(client);
   }
 
-  late final _i9.Caller serverpod_auth_idp;
+  late final _i8.Caller serverpod_auth_idp;
 
-  late final _i10.Caller serverpod_auth_core;
+  late final _i9.Caller serverpod_auth_core;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -310,7 +311,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i11.Protocol(),
+         _i10.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
