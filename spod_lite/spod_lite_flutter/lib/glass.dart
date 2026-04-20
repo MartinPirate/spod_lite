@@ -1,40 +1,50 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Apple-flavored Liquid Glass design tokens.
+/// Dashboard design tokens — Linear/Vercel/PocketBase-flavored slate.
+///
+/// Named `Glass` for backwards compatibility with existing imports, but
+/// the aesthetic is deliberately *not* frosted — admin dashboards are
+/// info-dense dev tools, not consumer surfaces. Solid panels, crisp
+/// hairlines, no backdrop blur, no gradient glow.
 class Glass {
-  // Deep near-black with a warm undertone.
-  static const bg = Color(0xFF06060A);
-  static const bgSoft = Color(0xFF0A0A10);
+  // Bases
+  static const bg = Color(0xFF0B0F14);
+  static const bgSoft = Color(0xFF0F141B);
 
-  // Surface — used as a *base* tint under backdrop blur.
-  static const surface = Color(0x1AFFFFFF); // white 10%
-  static const surfaceStrong = Color(0x33FFFFFF); // white 20%
-  static const surfaceHover = Color(0x26FFFFFF); // white 15%
+  // Surfaces (all opaque)
+  static const surface = Color(0xFF11161C);
+  static const surfaceHover = Color(0xFF151C24);
+  static const surfaceStrong = Color(0xFF1A2029);
 
-  // Hairline borders with a subtle inner gradient feel.
-  static const hairline = Color(0x29FFFFFF); // white 16%
-  static const hairlineStrong = Color(0x4DFFFFFF); // white 30%
+  // Borders
+  static const hairline = Color(0xFF232C38);
+  static const hairlineStrong = Color(0xFF2A3441);
 
-  static const text = Color(0xFFF2F3F7);
-  static const textMuted = Color(0xB3FFFFFF); // white 70%
-  static const textSubtle = Color(0x80FFFFFF); // white 50%
-  static const textFaint = Color(0x4DFFFFFF); // white 30%
+  // Text
+  static const text = Color(0xFFE8EEF5);
+  static const textMuted = Color(0xFF8B95A5);
+  static const textSubtle = Color(0xFF5A6475);
+  static const textFaint = Color(0xFF3F4958);
 
-  // Aurora accent palette — pulls through the glass.
+  // Accent — single sky/cyan, used sparingly.
+  static const accent = Color(0xFF38BDF8);
+  static const accentBright = Color(0xFF7DD3FC);
+  static const accentDeep = Color(0xFF0EA5E9);
+
+  // Secondary accents used only for the LiquidMark gradient and
+  // per-op rule badges; not applied as widget fills.
   static const auroraA = Color(0xFF7DD3FC); // sky-300
   static const auroraB = Color(0xFFC084FC); // purple-400
   static const auroraC = Color(0xFFF472B6); // pink-400
   static const auroraD = Color(0xFF34D399); // emerald-400
 
-  static const accent = Color(0xFF7DD3FC);
-  static const accentDeep = Color(0xFF0EA5E9);
-  static const danger = Color(0xFFFB7185);
+  // States
+  static const danger = Color(0xFFF87171);
+  static const success = Color(0xFF34D399);
 }
 
-ThemeData buildDemoTheme() {
+ThemeData buildDashboardTheme() {
   final base = ThemeData.dark(useMaterial3: true);
   final textTheme = GoogleFonts.interTextTheme(base.textTheme).apply(
     bodyColor: Glass.text,
@@ -45,7 +55,7 @@ ThemeData buildDemoTheme() {
     scaffoldBackgroundColor: Glass.bg,
     canvasColor: Glass.bg,
     colorScheme: const ColorScheme.dark(
-      surface: Glass.bgSoft,
+      surface: Glass.surface,
       onSurface: Glass.text,
       primary: Glass.accent,
       onPrimary: Colors.black,
@@ -53,247 +63,76 @@ ThemeData buildDemoTheme() {
       onSecondary: Colors.black,
       error: Glass.danger,
       onError: Colors.black,
+      outline: Glass.hairline,
     ),
     textTheme: textTheme.copyWith(
-      displayLarge: GoogleFonts.inter(
-          fontSize: 56, fontWeight: FontWeight.w700, letterSpacing: -2.5),
-      displayMedium: GoogleFonts.inter(
-          fontSize: 40, fontWeight: FontWeight.w700, letterSpacing: -1.8),
-      headlineLarge: GoogleFonts.inter(
-          fontSize: 32, fontWeight: FontWeight.w700, letterSpacing: -1.2),
-      headlineMedium: GoogleFonts.inter(
-          fontSize: 26, fontWeight: FontWeight.w700, letterSpacing: -0.9),
       headlineSmall: GoogleFonts.inter(
-          fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: -0.6),
+          fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.4),
       titleLarge: GoogleFonts.inter(
-          fontSize: 17, fontWeight: FontWeight.w600, letterSpacing: -0.3),
-      titleMedium: GoogleFonts.inter(
           fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: -0.2),
-      bodyLarge: GoogleFonts.inter(
-          fontSize: 15, color: Glass.text, height: 1.55),
-      bodyMedium: GoogleFonts.inter(
-          fontSize: 13.5, color: Glass.textMuted, height: 1.55),
-      bodySmall: GoogleFonts.inter(
-          fontSize: 12, color: Glass.textSubtle, height: 1.5),
+      titleMedium: GoogleFonts.inter(
+          fontSize: 13, fontWeight: FontWeight.w600),
+      bodyLarge: GoogleFonts.inter(fontSize: 14, color: Glass.text),
+      bodyMedium: GoogleFonts.inter(fontSize: 13, color: Glass.text),
+      bodySmall: GoogleFonts.inter(fontSize: 12, color: Glass.textMuted),
       labelSmall: GoogleFonts.inter(
-          fontSize: 11, color: Glass.textFaint, letterSpacing: 0.4),
+          fontSize: 11, color: Glass.textSubtle, letterSpacing: 0.3),
     ),
-    iconTheme: const IconThemeData(color: Glass.textMuted, size: 20),
+    iconTheme: const IconThemeData(color: Glass.textMuted, size: 18),
     dividerColor: Glass.hairline,
     splashFactory: NoSplash.splashFactory,
   );
 }
 
-/// Animated aurora background — slowly-drifting blurred color blobs over
-/// near-black. Produces the "light leaking through" feel that frosted glass
-/// surfaces sit on top of.
-class AuroraBackground extends StatefulWidget {
+/// Plain dark background — no animated blobs, no gradient.
+/// Kept as a widget so consumers can swap variants later if needed.
+class AuroraBackground extends StatelessWidget {
   final Widget child;
   const AuroraBackground({super.key, required this.child});
 
   @override
-  State<AuroraBackground> createState() => _AuroraBackgroundState();
-}
-
-class _AuroraBackgroundState extends State<AuroraBackground>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c;
-
-  @override
-  void initState() {
-    super.initState();
-    _c = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 22),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _c,
-      builder: (context, _) {
-        final t = _c.value;
-        return Stack(
-          children: [
-            Positioned.fill(child: Container(color: Glass.bg)),
-            _blob(
-              left: 0.1 + 0.1 * _wave(t, 0.0),
-              top: 0.05 + 0.08 * _wave(t, 0.25),
-              size: 620,
-              color: Glass.auroraB,
-              opacity: 0.30,
-            ),
-            _blob(
-              left: 0.55 + 0.12 * _wave(t, 0.5),
-              top: 0.2 + 0.06 * _wave(t, 0.75),
-              size: 520,
-              color: Glass.auroraA,
-              opacity: 0.28,
-            ),
-            _blob(
-              left: 0.35 + 0.08 * _wave(t, 0.33),
-              top: 0.55 + 0.10 * _wave(t, 0.66),
-              size: 600,
-              color: Glass.auroraC,
-              opacity: 0.22,
-            ),
-            _blob(
-              left: 0.7 + 0.08 * _wave(t, 0.7),
-              top: 0.6 + 0.10 * _wave(t, 0.15),
-              size: 460,
-              color: Glass.auroraD,
-              opacity: 0.18,
-            ),
-            // Scrim to unify and calm
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Glass.bg.withValues(alpha: 0.55),
-                      Glass.bg.withValues(alpha: 0.25),
-                      Glass.bg.withValues(alpha: 0.55),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            widget.child,
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _blob({
-    required double left,
-    required double top,
-    required double size,
-    required Color color,
-    required double opacity,
-  }) {
-    return LayoutBuilder(builder: (_, c) {
-      return Positioned(
-        left: c.maxWidth * left - size / 2,
-        top: c.maxHeight * top - size / 2,
-        width: size,
-        height: size,
-        child: IgnorePointer(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  color.withValues(alpha: opacity),
-                  color.withValues(alpha: 0),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    });
-  }
-
-  double _wave(double t, double phase) {
-    final p = (t + phase) * 6.28318;
-    // two sines layered so it never repeats in a boring way
-    return 0.5 * (0.6 * _sin(p) + 0.4 * _sin(p * 1.7));
-  }
-
-  double _sin(double x) {
-    // tiny replacement to avoid dart:math import here
-    const pi2 = 6.28318;
-    final a = ((x % pi2) + pi2) % pi2 - 3.14159;
-    // Bhaskara I approx — good enough for ambient motion
-    final num = 16 * a * (3.14159 - a.abs());
-    final den = 49.348 - 4 * a * (3.14159 - a.abs());
-    return num / den;
+    return ColoredBox(color: Glass.bg, child: child);
   }
 }
 
-/// Frosted glass panel — true backdrop blur with a subtle hairline and
-/// top highlight, matching iOS 26 Liquid Glass surfaces.
+/// Solid surface panel with a thin border — the dashboard's workhorse
+/// container. Replaces the old frosted-glass implementation.
 class GlassPanel extends StatelessWidget {
   final Widget child;
   final double radius;
   final EdgeInsetsGeometry padding;
+  final Color? background;
+
+  /// Retained for API compatibility with the old frosted panel.
+  /// Has no effect on this solid variant.
+  // ignore: unused_element_parameter
   final double blur;
-  final Color? tint;
 
   const GlassPanel({
     super.key,
     required this.child,
-    this.radius = 22,
-    this.padding = const EdgeInsets.all(24),
-    this.blur = 40,
-    this.tint,
+    this.radius = 10,
+    this.padding = const EdgeInsets.all(16),
+    this.background,
+    this.blur = 0,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(radius),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                (tint ?? Colors.white).withValues(alpha: 0.14),
-                (tint ?? Colors.white).withValues(alpha: 0.06),
-              ],
-            ),
-            border: Border.all(color: Glass.hairline, width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.35),
-                blurRadius: 40,
-                offset: const Offset(0, 20),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              // Inner top highlight — the "glass shine"
-              Positioned(
-                top: 0, left: 0, right: 0,
-                child: Container(
-                  height: 1,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0.0),
-                        Colors.white.withValues(alpha: 0.35),
-                        Colors.white.withValues(alpha: 0.0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Padding(padding: padding, child: child),
-            ],
-          ),
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: background ?? Glass.surface,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: Glass.hairline),
       ),
+      padding: padding,
+      child: child,
     );
   }
 }
 
-/// Entrance animation — fades and spring-slides up. Wrap any widget with
-/// this for the "landing softly" iOS feel.
+/// Entrance animation — fade + subtle slide up. Works fine without glass.
 class RiseIn extends StatefulWidget {
   final Widget child;
   final Duration delay;
@@ -303,7 +142,7 @@ class RiseIn extends StatefulWidget {
     super.key,
     required this.child,
     this.delay = Duration.zero,
-    this.duration = const Duration(milliseconds: 720),
+    this.duration = const Duration(milliseconds: 320),
   });
 
   @override
@@ -322,7 +161,7 @@ class _RiseInState extends State<RiseIn>
     _c = AnimationController(vsync: this, duration: widget.duration);
     _fade = CurvedAnimation(parent: _c, curve: Curves.easeOut);
     _slide = Tween<Offset>(
-      begin: const Offset(0, 0.08),
+      begin: const Offset(0, 0.04),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _c, curve: Curves.easeOutCubic));
     Future.delayed(widget.delay, () {
@@ -345,18 +184,21 @@ class _RiseInState extends State<RiseIn>
   }
 }
 
-/// Liquid pill button — gradient fill, subtle glass sheen, spring hover.
+/// Clean accent button — solid sky fill, hairline on hover, no glow.
+/// Kept named `LiquidButton` for API compatibility.
 class LiquidButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final Widget child;
   final double height;
+
+  /// When true, renders a quieter secondary style.
   final bool subtle;
 
   const LiquidButton({
     super.key,
     required this.onPressed,
     required this.child,
-    this.height = 50,
+    this.height = 36,
     this.subtle = false,
   });
 
@@ -366,25 +208,25 @@ class LiquidButton extends StatefulWidget {
 
 class _LiquidButtonState extends State<LiquidButton> {
   bool _hover = false;
-  bool _press = false;
 
   @override
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null;
-    final scale = _press ? 0.98 : (_hover && enabled ? 1.01 : 1.0);
 
-    final gradient = widget.subtle
-        ? LinearGradient(
-            colors: [
-              Colors.white.withValues(alpha: 0.12),
-              Colors.white.withValues(alpha: 0.06),
-            ],
-          )
-        : const LinearGradient(
-            colors: [Color(0xFFFFFFFF), Color(0xFFE5F3FF)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          );
+    final Color bg;
+    final Color fg;
+    final Color border;
+    if (widget.subtle) {
+      bg = _hover && enabled ? Glass.surfaceHover : Glass.surface;
+      fg = Glass.text;
+      border = _hover && enabled ? Glass.hairlineStrong : Glass.hairline;
+    } else {
+      bg = enabled
+          ? (_hover ? Glass.accentBright : Glass.accent)
+          : Glass.surfaceHover;
+      fg = enabled ? Colors.black : Glass.textFaint;
+      border = Colors.transparent;
+    }
 
     return MouseRegion(
       cursor:
@@ -392,57 +234,26 @@ class _LiquidButtonState extends State<LiquidButton> {
       onEnter: (_) => setState(() => _hover = true),
       onExit: (_) => setState(() => _hover = false),
       child: GestureDetector(
-        onTapDown: (_) => setState(() => _press = true),
-        onTapUp: (_) => setState(() => _press = false),
-        onTapCancel: () => setState(() => _press = false),
         onTap: widget.onPressed,
-        child: AnimatedScale(
-          scale: scale,
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOut,
-            height: widget.height,
-            decoration: BoxDecoration(
-              gradient: gradient,
-              borderRadius: BorderRadius.circular(widget.height / 2),
-              border: Border.all(
-                color: widget.subtle
-                    ? Glass.hairlineStrong
-                    : Colors.white.withValues(alpha: 0.9),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          height: widget.height,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: border),
+          ),
+          child: Center(
+            child: DefaultTextStyle.merge(
+              style: TextStyle(
+                color: fg,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.1,
               ),
-              boxShadow: enabled && !widget.subtle
-                  ? [
-                      BoxShadow(
-                        color: Colors.white
-                            .withValues(alpha: _hover ? 0.35 : 0.2),
-                        blurRadius: _hover ? 30 : 18,
-                        offset: const Offset(0, 8),
-                      ),
-                      BoxShadow(
-                        color: Glass.accent.withValues(alpha: 0.25),
-                        blurRadius: 28,
-                        offset: const Offset(0, 14),
-                      ),
-                    ]
-                  : null,
-            ),
-            child: Center(
-              child: DefaultTextStyle.merge(
-                style: TextStyle(
-                  color: widget.subtle ? Glass.text : Colors.black,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.2,
-                ),
-                child: IconTheme(
-                  data: IconThemeData(
-                    color: widget.subtle ? Glass.text : Colors.black,
-                    size: 16,
-                  ),
-                  child: widget.child,
-                ),
+              child: IconTheme(
+                data: IconThemeData(color: fg, size: 14),
+                child: widget.child,
               ),
             ),
           ),
@@ -452,7 +263,7 @@ class _LiquidButtonState extends State<LiquidButton> {
   }
 }
 
-/// Glass-styled text input — translucent fill, thin hairline, soft focus.
+/// Plain text field on a solid surface — hairline border, accent focus ring.
 class GlassField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
@@ -507,34 +318,25 @@ class _GlassFieldState extends State<GlassField> {
         Text(widget.label,
             style: const TextStyle(
                 fontSize: 11,
-                letterSpacing: 0.6,
+                letterSpacing: 0.4,
                 fontWeight: FontWeight.w600,
                 color: Glass.textSubtle)),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOut,
+          duration: const Duration(milliseconds: 140),
           decoration: BoxDecoration(
-            color: _hasFocus ? Glass.surfaceStrong : Glass.surface,
-            borderRadius: BorderRadius.circular(14),
+            color: Glass.bgSoft,
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: _hasFocus ? Glass.hairlineStrong : Glass.hairline,
-              width: 1,
+              color: _hasFocus ? Glass.accent : Glass.hairline,
+              width: _hasFocus ? 1.2 : 1,
             ),
-            boxShadow: _hasFocus
-                ? [
-                    BoxShadow(
-                      color: Glass.accent.withValues(alpha: 0.25),
-                      blurRadius: 24,
-                    )
-                  ]
-                : null,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             children: [
               if (widget.leading != null) ...[
-                Icon(widget.leading, size: 15, color: Glass.textSubtle),
+                Icon(widget.leading, size: 14, color: Glass.textSubtle),
                 const SizedBox(width: 10),
               ],
               Expanded(
@@ -547,19 +349,18 @@ class _GlassFieldState extends State<GlassField> {
                   onSubmitted: widget.onSubmitted,
                   cursorColor: Glass.accent,
                   style: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 14,
                       color: Glass.text,
                       fontWeight: FontWeight.w500),
                   decoration: InputDecoration(
                     hintText: widget.hint,
                     hintStyle: const TextStyle(
                         color: Glass.textFaint,
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w400),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
@@ -572,10 +373,11 @@ class _GlassFieldState extends State<GlassField> {
   }
 }
 
-/// Brand mark — liquid gradient with ambient glow.
+/// Brand mark — small gradient rounded square. Kept from the Liquid Glass
+/// era because it reads well on any background and the gradient is on-brand.
 class LiquidMark extends StatelessWidget {
   final double size;
-  const LiquidMark({super.key, this.size = 44});
+  const LiquidMark({super.key, this.size = 28});
 
   @override
   Widget build(BuildContext context) {
@@ -583,55 +385,15 @@ class LiquidMark extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(size * 0.3),
+        borderRadius: BorderRadius.circular(size * 0.28),
         gradient: const LinearGradient(
-          colors: [
-            Glass.auroraA,
-            Glass.auroraB,
-          ],
+          colors: [Glass.auroraA, Glass.auroraB],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Glass.auroraA.withValues(alpha: 0.55),
-            blurRadius: 22,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Glass.auroraB.withValues(alpha: 0.35),
-            blurRadius: 30,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Icon(Icons.bolt, color: Colors.white, size: size * 0.55),
-          ),
-          Positioned(
-            top: 1, left: 1, right: 1,
-            child: Container(
-              height: size * 0.5,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(size * 0.28),
-                  topRight: Radius.circular(size * 0.28),
-                ),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.white.withValues(alpha: 0.35),
-                    Colors.white.withValues(alpha: 0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      alignment: Alignment.center,
+      child: Icon(Icons.bolt, color: Colors.white, size: size * 0.55),
     );
   }
 }
