@@ -64,12 +64,19 @@ class _SignInScreenState extends State<SignInScreen> {
     } on SpodLiteUserAuthException catch (e) {
       setState(() => _error = e.message);
     } catch (e) {
-      // ServerpodClientException or anything else — show something
-      // readable instead of the raw class name.
-      final s = e.toString();
-      final m =
-          RegExp(r'ServerpodClientException[^:]*:\s*(.+)').firstMatch(s);
-      setState(() => _error = (m?.group(1) ?? s).trim());
+      // Fallback — SpodLiteException subclasses already have .message,
+      // and any remaining raw ServerpodClientException gets regex-cleaned.
+      String message;
+      try {
+        final m = (e as dynamic).message;
+        message = m is String && m.isNotEmpty ? m : e.toString();
+      } catch (_) {
+        final s = e.toString();
+        final m =
+            RegExp(r'ServerpodClientException[^:]*:\s*(.+)').firstMatch(s);
+        message = (m?.group(1) ?? s).trim();
+      }
+      setState(() => _error = message);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

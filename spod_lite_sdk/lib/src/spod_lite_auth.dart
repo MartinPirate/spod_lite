@@ -133,6 +133,12 @@ class SpodLiteAuth {
   }
 
   String _clean(Object e) {
+    // Prefer the duck-typed .message if the caller handed us a
+    // SpodLiteException — avoids importing the generated type here.
+    try {
+      final m = (e as dynamic).message;
+      if (m is String && m.isNotEmpty) return m;
+    } catch (_) {}
     final s = e.toString();
     final m =
         RegExp(r'ServerpodClientException[^:]*:\s*(.+)').firstMatch(s);
