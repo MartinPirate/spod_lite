@@ -18,6 +18,7 @@ void main() async {
     userAuthEndpoint: (c) => c.userAuth,
     collectionsEndpoint: (c) => c.collections,
     recordsEndpoint: (c) => c.records,
+    filesEndpoint: (c) => c.files,
   );
   await spod.userAuth.restore();
   runApp(const DemoApp());
