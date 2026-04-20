@@ -1,0 +1,33 @@
+# Dart & Flutter build artifacts
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+pubspec.lock
+
+# Flutter
+.flutter-plugins
+.flutter-plugins-dependencies
+**/generated_plugin_registrant.dart
+
+# Flutter web compiled output (rebuild via `flutter build web`)
+spod_lite/spod_lite_server/web/app/
+
+# Platform-specific scaffolding we don't ship in this repo
+**/android/
+**/ios/
+**/macos/
+**/linux/
+**/windows/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
