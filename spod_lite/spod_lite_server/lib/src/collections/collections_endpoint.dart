@@ -5,6 +5,7 @@ import '../admin/admin_authentication_handler.dart';
 import '../generated/protocol.dart';
 import 'field_types.dart';
 import 'identifier_safety.dart';
+import 'rule_enforcer.dart';
 
 /// Dashboard-side API for creating and listing user-defined collections.
 ///
@@ -172,6 +173,59 @@ class CollectionsEndpoint extends Endpoint {
       }
       session.log('[collections] dropped "$name"');
     });
+  }
+
+  /// Update the 5 per-op rules on an existing collection. Accepts any
+  /// subset; omitted keys stay unchanged. Allowed values: `public`,
+  /// `authed`, `admin`.
+  Future<CollectionDef> updateRules(
+    Session session,
+    String name,
+    String rulesJson,
+  ) async {
+    assertValidIdentifier(name, kind: 'collection name');
+    final rules = _decodeRules(rulesJson);
+
+    final def = await CollectionDef.db.findFirstRow(
+      session,
+      where: (c) => c.name.equals(name),
+    );
+    if (def == null) {
+      throw InvalidIdentifierException(
+          'Collection "$name" does not exist.');
+    }
+
+    final updated = def.copyWith(
+      listRule: rules['listRule'] ?? def.listRule,
+      viewRule: rules['viewRule'] ?? def.viewRule,
+      createRule: rules['createRule'] ?? def.createRule,
+      updateRule: rules['updateRule'] ?? def.updateRule,
+      deleteRule: rules['deleteRule'] ?? def.deleteRule,
+    );
+    return CollectionDef.db.updateRow(session, updated);
+  }
+
+  Map<String, String> _decodeRules(String json) {
+    final decoded = jsonDecode(json);
+    if (decoded is! Map) {
+      throw InvalidIdentifierException(
+          'Rules must be a JSON object.');
+    }
+    const allowedKeys = {
+      'listRule', 'viewRule', 'createRule', 'updateRule', 'deleteRule'
+    };
+    final result = <String, String>{};
+    for (final entry in decoded.entries) {
+      final key = entry.key.toString();
+      if (!allowedKeys.contains(key)) continue;
+      final value = entry.value.toString();
+      if (!ruleModes.contains(value)) {
+        throw InvalidIdentifierException(
+            'Rule value "$value" is invalid. Allowed: ${ruleModes.join(", ")}.');
+      }
+      result[key] = value;
+    }
+    return result;
   }
 
   List<_FieldSpec> _decodeSpecs(String json) {
