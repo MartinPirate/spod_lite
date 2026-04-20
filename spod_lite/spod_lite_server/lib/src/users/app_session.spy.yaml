@@ -1,0 +1,16 @@
+### A session token issued to an app end-user after sign-in.
+class: AppSession
+table: app_session
+
+fields:
+  token: String
+  appUserId: int
+  createdAt: DateTime?, defaultPersist=now
+  expiresAt: DateTime
+
+indexes:
+  app_session_token_uidx:
+    fields: token
+    unique: true
+  app_session_user_idx:
+    fields: appUserId

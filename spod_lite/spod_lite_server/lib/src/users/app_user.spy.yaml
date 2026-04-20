@@ -1,0 +1,15 @@
+### An end-user of apps built on this Serverpod Lite backend.
+### Distinct from `AdminUser` — admins run the dashboard, app users are
+### the people whose accounts the app creates.
+class: AppUser
+table: app_user
+
+fields:
+  email: String
+  passwordHash: String
+  createdAt: DateTime?, defaultPersist=now
+
+indexes:
+  app_user_email_uidx:
+    fields: email
+    unique: true
