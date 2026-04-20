@@ -4,6 +4,8 @@ import 'package:serverpod/serverpod.dart';
 
 import 'src/admin/admin_authentication_handler.dart';
 import 'src/admin/dev_seed.dart';
+import 'src/emails/email_driver.dart';
+import 'src/emails/smtp_email_driver.dart';
 import 'src/generated/endpoints.dart';
 import 'src/generated/protocol.dart';
 import 'src/web/routes/app_config_route.dart';
@@ -25,6 +27,17 @@ void run(List<String> args) async {
   // Database-backed file storage under the 'public' bucket. Files are
   // served via Serverpod's built-in /serverpod_cloud_storage endpoint.
   pod.addCloudStorage(DatabaseCloudStorage('public'));
+
+  // Email driver: default to the console (log-to-stdout) adapter; if
+  // SMTP creds are present in the environment, swap in the real driver.
+  if ((Platform.environment['SPOD_SMTP_HOST'] ?? '').isNotEmpty) {
+    try {
+      EmailService.instance.use(SmtpEmailDriver.fromEnv());
+      stdout.writeln('[emails] using SMTP driver');
+    } catch (e) {
+      stdout.writeln('[emails] SMTP init failed ($e); falling back to console');
+    }
+  }
 
   // Setup a default page at the web root.
   // These are used by the default page.
