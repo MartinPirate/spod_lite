@@ -13,13 +13,19 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'dart:async' as _i2;
 import 'package:spod_lite_client/src/protocol/admin/admin_user.dart' as _i3;
-import 'package:spod_lite_client/src/protocol/greetings/greeting.dart' as _i4;
-import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i5;
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+import 'package:spod_lite_client/src/protocol/collections/collection_def.dart'
+    as _i4;
+import 'package:spod_lite_client/src/protocol/collections/collection_field.dart'
+    as _i5;
+import 'package:spod_lite_client/src/protocol/collections/collection_field_spec.dart'
     as _i6;
+import 'package:spod_lite_client/src/protocol/greetings/greeting.dart' as _i7;
+import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i8;
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+    as _i9;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
-    as _i7;
-import 'protocol.dart' as _i8;
+    as _i10;
+import 'protocol.dart' as _i11;
 
 /// {@category Endpoint}
 class EndpointAdminAuth extends _i1.EndpointRef {
@@ -72,6 +78,156 @@ class EndpointAdminAuth extends _i1.EndpointRef {
   );
 }
 
+/// Dashboard-side API for creating and listing user-defined collections.
+///
+/// Each collection is backed by a dynamically-created `collection_<name>`
+/// table in Postgres. Definitions live in `collection_def` and
+/// `collection_field`. All DDL goes through [quoteIdent] after
+/// [assertValidIdentifier] — there is no other path.
+/// {@category Endpoint}
+class EndpointCollections extends _i1.EndpointRef {
+  EndpointCollections(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'collections';
+
+  _i2.Future<List<_i4.CollectionDef>> list() =>
+      caller.callServerEndpoint<List<_i4.CollectionDef>>(
+        'collections',
+        'list',
+        {},
+      );
+
+  _i2.Future<_i4.CollectionDef?> get(String name) =>
+      caller.callServerEndpoint<_i4.CollectionDef?>(
+        'collections',
+        'get',
+        {'name': name},
+      );
+
+  _i2.Future<List<_i5.CollectionField>> fields(int collectionDefId) =>
+      caller.callServerEndpoint<List<_i5.CollectionField>>(
+        'collections',
+        'fields',
+        {'collectionDefId': collectionDefId},
+      );
+
+  /// Create a collection: inserts definition + field rows and runs
+  /// `CREATE TABLE` atomically. If any step fails the whole thing
+  /// rolls back so we don't orphan a definition without a table (or
+  /// vice versa).
+  _i2.Future<_i4.CollectionDef> create(
+    String name,
+    String label,
+    List<_i6.CollectionFieldSpec> specs,
+  ) => caller.callServerEndpoint<_i4.CollectionDef>(
+    'collections',
+    'create',
+    {
+      'name': name,
+      'label': label,
+      'specs': specs,
+    },
+  );
+
+  /// Delete a collection: drops the dynamic table first (if present),
+  /// then the definition — which cascades to its fields.
+  _i2.Future<void> delete(String name) => caller.callServerEndpoint<void>(
+    'collections',
+    'delete',
+    {'name': name},
+  );
+}
+
+/// Generic CRUD over user-defined collections.
+///
+/// Records are passed across the wire as JSON strings because Serverpod's
+/// type system doesn't allow `Map<String, dynamic>` — the SDK and
+/// dashboard handle the string ↔ map conversion so callers never see it.
+///
+/// All data values flow through positional/named query parameters —
+/// never interpolated. Identifiers go through [quoteIdent] after
+/// [assertValidIdentifier].
+/// {@category Endpoint}
+class EndpointRecords extends _i1.EndpointRef {
+  EndpointRecords(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'records';
+
+  /// Returns a list of records encoded as JSON strings.
+  _i2.Future<List<String>> list(
+    String collectionName,
+    int page,
+    int perPage,
+  ) => caller.callServerEndpoint<List<String>>(
+    'records',
+    'list',
+    {
+      'collectionName': collectionName,
+      'page': page,
+      'perPage': perPage,
+    },
+  );
+
+  _i2.Future<int> count(String collectionName) =>
+      caller.callServerEndpoint<int>(
+        'records',
+        'count',
+        {'collectionName': collectionName},
+      );
+
+  _i2.Future<String?> get(
+    String collectionName,
+    int id,
+  ) => caller.callServerEndpoint<String?>(
+    'records',
+    'get',
+    {
+      'collectionName': collectionName,
+      'id': id,
+    },
+  );
+
+  _i2.Future<String> create(
+    String collectionName,
+    String dataJson,
+  ) => caller.callServerEndpoint<String>(
+    'records',
+    'create',
+    {
+      'collectionName': collectionName,
+      'dataJson': dataJson,
+    },
+  );
+
+  _i2.Future<String> update(
+    String collectionName,
+    int id,
+    String dataJson,
+  ) => caller.callServerEndpoint<String>(
+    'records',
+    'update',
+    {
+      'collectionName': collectionName,
+      'id': id,
+      'dataJson': dataJson,
+    },
+  );
+
+  _i2.Future<void> delete(
+    String collectionName,
+    int id,
+  ) => caller.callServerEndpoint<void>(
+    'records',
+    'delete',
+    {
+      'collectionName': collectionName,
+      'id': id,
+    },
+  );
+}
+
 /// This is an example endpoint that returns a greeting message through
 /// its [hello] method.
 /// {@category Endpoint}
@@ -82,8 +238,8 @@ class EndpointGreeting extends _i1.EndpointRef {
   String get name => 'greeting';
 
   /// Returns a personalized greeting message: "Hello {name}".
-  _i2.Future<_i4.Greeting> hello(String name) =>
-      caller.callServerEndpoint<_i4.Greeting>(
+  _i2.Future<_i7.Greeting> hello(String name) =>
+      caller.callServerEndpoint<_i7.Greeting>(
         'greeting',
         'hello',
         {'name': name},
@@ -97,17 +253,17 @@ class EndpointPosts extends _i1.EndpointRef {
   @override
   String get name => 'posts';
 
-  _i2.Future<List<_i5.Post>> listPosts() =>
-      caller.callServerEndpoint<List<_i5.Post>>(
+  _i2.Future<List<_i8.Post>> listPosts() =>
+      caller.callServerEndpoint<List<_i8.Post>>(
         'posts',
         'listPosts',
         {},
       );
 
-  _i2.Future<_i5.Post> createPost(
+  _i2.Future<_i8.Post> createPost(
     String title,
     String body,
-  ) => caller.callServerEndpoint<_i5.Post>(
+  ) => caller.callServerEndpoint<_i8.Post>(
     'posts',
     'createPost',
     {
@@ -125,13 +281,13 @@ class EndpointPosts extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    serverpod_auth_idp = _i6.Caller(client);
-    serverpod_auth_core = _i7.Caller(client);
+    serverpod_auth_idp = _i9.Caller(client);
+    serverpod_auth_core = _i10.Caller(client);
   }
 
-  late final _i6.Caller serverpod_auth_idp;
+  late final _i9.Caller serverpod_auth_idp;
 
-  late final _i7.Caller serverpod_auth_core;
+  late final _i10.Caller serverpod_auth_core;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -154,7 +310,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i8.Protocol(),
+         _i11.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -164,12 +320,18 @@ class Client extends _i1.ServerpodClientShared {
              disconnectStreamsOnLostInternetConnection,
        ) {
     adminAuth = EndpointAdminAuth(this);
+    collections = EndpointCollections(this);
+    records = EndpointRecords(this);
     greeting = EndpointGreeting(this);
     posts = EndpointPosts(this);
     modules = Modules(this);
   }
 
   late final EndpointAdminAuth adminAuth;
+
+  late final EndpointCollections collections;
+
+  late final EndpointRecords records;
 
   late final EndpointGreeting greeting;
 
@@ -180,6 +342,8 @@ class Client extends _i1.ServerpodClientShared {
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
     'adminAuth': adminAuth,
+    'collections': collections,
+    'records': records,
     'greeting': greeting,
     'posts': posts,
   };

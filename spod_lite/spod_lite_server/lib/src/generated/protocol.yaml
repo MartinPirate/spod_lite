@@ -4,6 +4,19 @@ adminAuth:
   - signIn:
   - me:
   - signOut:
+collections:
+  - list:
+  - get:
+  - fields:
+  - create:
+  - delete:
+records:
+  - list:
+  - count:
+  - get:
+  - create:
+  - update:
+  - delete:
 greeting:
   - hello:
 posts:

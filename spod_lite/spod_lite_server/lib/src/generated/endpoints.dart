@@ -12,12 +12,16 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../admin/admin_auth_endpoint.dart' as _i2;
-import '../greetings/greeting_endpoint.dart' as _i3;
-import '../posts/posts_endpoint.dart' as _i4;
+import '../collections/collections_endpoint.dart' as _i3;
+import '../collections/records_endpoint.dart' as _i4;
+import '../greetings/greeting_endpoint.dart' as _i5;
+import '../posts/posts_endpoint.dart' as _i6;
+import 'package:spod_lite_server/src/generated/collections/collection_field_spec.dart'
+    as _i7;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _i5;
+    as _i8;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
-    as _i6;
+    as _i9;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -29,13 +33,25 @@ class Endpoints extends _i1.EndpointDispatch {
           'adminAuth',
           null,
         ),
-      'greeting': _i3.GreetingEndpoint()
+      'collections': _i3.CollectionsEndpoint()
+        ..initialize(
+          server,
+          'collections',
+          null,
+        ),
+      'records': _i4.RecordsEndpoint()
+        ..initialize(
+          server,
+          'records',
+          null,
+        ),
+      'greeting': _i5.GreetingEndpoint()
         ..initialize(
           server,
           'greeting',
           null,
         ),
-      'posts': _i4.PostsEndpoint()
+      'posts': _i6.PostsEndpoint()
         ..initialize(
           server,
           'posts',
@@ -145,6 +161,266 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
+    connectors['collections'] = _i1.EndpointConnector(
+      name: 'collections',
+      endpoint: endpoints['collections']!,
+      methodConnectors: {
+        'list': _i1.MethodConnector(
+          name: 'list',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['collections'] as _i3.CollectionsEndpoint)
+                  .list(session),
+        ),
+        'get': _i1.MethodConnector(
+          name: 'get',
+          params: {
+            'name': _i1.ParameterDescription(
+              name: 'name',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['collections'] as _i3.CollectionsEndpoint).get(
+                    session,
+                    params['name'],
+                  ),
+        ),
+        'fields': _i1.MethodConnector(
+          name: 'fields',
+          params: {
+            'collectionDefId': _i1.ParameterDescription(
+              name: 'collectionDefId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['collections'] as _i3.CollectionsEndpoint).fields(
+                    session,
+                    params['collectionDefId'],
+                  ),
+        ),
+        'create': _i1.MethodConnector(
+          name: 'create',
+          params: {
+            'name': _i1.ParameterDescription(
+              name: 'name',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'label': _i1.ParameterDescription(
+              name: 'label',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'specs': _i1.ParameterDescription(
+              name: 'specs',
+              type: _i1.getType<List<_i7.CollectionFieldSpec>>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['collections'] as _i3.CollectionsEndpoint).create(
+                    session,
+                    params['name'],
+                    params['label'],
+                    params['specs'],
+                  ),
+        ),
+        'delete': _i1.MethodConnector(
+          name: 'delete',
+          params: {
+            'name': _i1.ParameterDescription(
+              name: 'name',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['collections'] as _i3.CollectionsEndpoint).delete(
+                    session,
+                    params['name'],
+                  ),
+        ),
+      },
+    );
+    connectors['records'] = _i1.EndpointConnector(
+      name: 'records',
+      endpoint: endpoints['records']!,
+      methodConnectors: {
+        'list': _i1.MethodConnector(
+          name: 'list',
+          params: {
+            'collectionName': _i1.ParameterDescription(
+              name: 'collectionName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'page': _i1.ParameterDescription(
+              name: 'page',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'perPage': _i1.ParameterDescription(
+              name: 'perPage',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['records'] as _i4.RecordsEndpoint).list(
+                session,
+                params['collectionName'],
+                params['page'],
+                params['perPage'],
+              ),
+        ),
+        'count': _i1.MethodConnector(
+          name: 'count',
+          params: {
+            'collectionName': _i1.ParameterDescription(
+              name: 'collectionName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['records'] as _i4.RecordsEndpoint).count(
+                session,
+                params['collectionName'],
+              ),
+        ),
+        'get': _i1.MethodConnector(
+          name: 'get',
+          params: {
+            'collectionName': _i1.ParameterDescription(
+              name: 'collectionName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'id': _i1.ParameterDescription(
+              name: 'id',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['records'] as _i4.RecordsEndpoint).get(
+                session,
+                params['collectionName'],
+                params['id'],
+              ),
+        ),
+        'create': _i1.MethodConnector(
+          name: 'create',
+          params: {
+            'collectionName': _i1.ParameterDescription(
+              name: 'collectionName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'dataJson': _i1.ParameterDescription(
+              name: 'dataJson',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['records'] as _i4.RecordsEndpoint).create(
+                session,
+                params['collectionName'],
+                params['dataJson'],
+              ),
+        ),
+        'update': _i1.MethodConnector(
+          name: 'update',
+          params: {
+            'collectionName': _i1.ParameterDescription(
+              name: 'collectionName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'id': _i1.ParameterDescription(
+              name: 'id',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'dataJson': _i1.ParameterDescription(
+              name: 'dataJson',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['records'] as _i4.RecordsEndpoint).update(
+                session,
+                params['collectionName'],
+                params['id'],
+                params['dataJson'],
+              ),
+        ),
+        'delete': _i1.MethodConnector(
+          name: 'delete',
+          params: {
+            'collectionName': _i1.ParameterDescription(
+              name: 'collectionName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'id': _i1.ParameterDescription(
+              name: 'id',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['records'] as _i4.RecordsEndpoint).delete(
+                session,
+                params['collectionName'],
+                params['id'],
+              ),
+        ),
+      },
+    );
     connectors['greeting'] = _i1.EndpointConnector(
       name: 'greeting',
       endpoint: endpoints['greeting']!,
@@ -162,7 +438,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['greeting'] as _i3.GreetingEndpoint).hello(
+              ) async => (endpoints['greeting'] as _i5.GreetingEndpoint).hello(
                 session,
                 params['name'],
               ),
@@ -181,7 +457,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['posts'] as _i4.PostsEndpoint).listPosts(session),
+                  (endpoints['posts'] as _i6.PostsEndpoint).listPosts(session),
         ),
         'createPost': _i1.MethodConnector(
           name: 'createPost',
@@ -201,7 +477,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['posts'] as _i4.PostsEndpoint).createPost(
+              ) async => (endpoints['posts'] as _i6.PostsEndpoint).createPost(
                 session,
                 params['title'],
                 params['body'],
@@ -220,16 +496,16 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['posts'] as _i4.PostsEndpoint).deletePost(
+              ) async => (endpoints['posts'] as _i6.PostsEndpoint).deletePost(
                 session,
                 params['id'],
               ),
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _i5.Endpoints()
+    modules['serverpod_auth_idp'] = _i8.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i6.Endpoints()
+    modules['serverpod_auth_core'] = _i9.Endpoints()
       ..initializeEndpoints(server);
   }
 }

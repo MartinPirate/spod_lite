@@ -18,11 +18,23 @@ import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _i4;
 import 'admin/admin_session.dart' as _i5;
 import 'admin/admin_user.dart' as _i6;
-import 'greetings/greeting.dart' as _i7;
-import 'posts/post.dart' as _i8;
-import 'package:spod_lite_server/src/generated/posts/post.dart' as _i9;
+import 'collections/collection_def.dart' as _i7;
+import 'collections/collection_field.dart' as _i8;
+import 'collections/collection_field_spec.dart' as _i9;
+import 'greetings/greeting.dart' as _i10;
+import 'posts/post.dart' as _i11;
+import 'package:spod_lite_server/src/generated/collections/collection_def.dart'
+    as _i12;
+import 'package:spod_lite_server/src/generated/collections/collection_field.dart'
+    as _i13;
+import 'package:spod_lite_server/src/generated/collections/collection_field_spec.dart'
+    as _i14;
+import 'package:spod_lite_server/src/generated/posts/post.dart' as _i15;
 export 'admin/admin_session.dart';
 export 'admin/admin_user.dart';
+export 'collections/collection_def.dart';
+export 'collections/collection_field.dart';
+export 'collections/collection_field_spec.dart';
 export 'greetings/greeting.dart';
 export 'posts/post.dart';
 
@@ -169,6 +181,164 @@ class Protocol extends _i1.SerializationManagerServer {
       managed: true,
     ),
     _i2.TableDefinition(
+      name: 'collection_def',
+      dartName: 'CollectionDef',
+      schema: 'public',
+      module: 'spod_lite',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'collection_def_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'name',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'label',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+          columnDefault: 'CURRENT_TIMESTAMP',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'collection_def_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'collection_def_name_uidx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'name',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
+      name: 'collection_field',
+      dartName: 'CollectionField',
+      schema: 'public',
+      module: 'spod_lite',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'collection_field_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'collectionDefId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'name',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'fieldType',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'required',
+          columnType: _i2.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
+        _i2.ColumnDefinition(
+          name: 'fieldOrder',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'collection_field_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'collection_field_name_by_collection',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'collectionDefId',
+            ),
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'name',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'collection_field_def_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'collectionDefId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
       name: 'post',
       dartName: 'Post',
       schema: 'public',
@@ -257,11 +427,20 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i6.AdminUser) {
       return _i6.AdminUser.fromJson(data) as T;
     }
-    if (t == _i7.Greeting) {
-      return _i7.Greeting.fromJson(data) as T;
+    if (t == _i7.CollectionDef) {
+      return _i7.CollectionDef.fromJson(data) as T;
     }
-    if (t == _i8.Post) {
-      return _i8.Post.fromJson(data) as T;
+    if (t == _i8.CollectionField) {
+      return _i8.CollectionField.fromJson(data) as T;
+    }
+    if (t == _i9.CollectionFieldSpec) {
+      return _i9.CollectionFieldSpec.fromJson(data) as T;
+    }
+    if (t == _i10.Greeting) {
+      return _i10.Greeting.fromJson(data) as T;
+    }
+    if (t == _i11.Post) {
+      return _i11.Post.fromJson(data) as T;
     }
     if (t == _i1.getType<_i5.AdminSession?>()) {
       return (data != null ? _i5.AdminSession.fromJson(data) : null) as T;
@@ -269,14 +448,45 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i6.AdminUser?>()) {
       return (data != null ? _i6.AdminUser.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i7.Greeting?>()) {
-      return (data != null ? _i7.Greeting.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i7.CollectionDef?>()) {
+      return (data != null ? _i7.CollectionDef.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i8.Post?>()) {
-      return (data != null ? _i8.Post.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i8.CollectionField?>()) {
+      return (data != null ? _i8.CollectionField.fromJson(data) : null) as T;
     }
-    if (t == List<_i9.Post>) {
-      return (data as List).map((e) => deserialize<_i9.Post>(e)).toList() as T;
+    if (t == _i1.getType<_i9.CollectionFieldSpec?>()) {
+      return (data != null ? _i9.CollectionFieldSpec.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i10.Greeting?>()) {
+      return (data != null ? _i10.Greeting.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i11.Post?>()) {
+      return (data != null ? _i11.Post.fromJson(data) : null) as T;
+    }
+    if (t == List<_i12.CollectionDef>) {
+      return (data as List)
+              .map((e) => deserialize<_i12.CollectionDef>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i13.CollectionField>) {
+      return (data as List)
+              .map((e) => deserialize<_i13.CollectionField>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i14.CollectionFieldSpec>) {
+      return (data as List)
+              .map((e) => deserialize<_i14.CollectionFieldSpec>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
+    if (t == List<_i15.Post>) {
+      return (data as List).map((e) => deserialize<_i15.Post>(e)).toList() as T;
     }
     try {
       return _i3.Protocol().deserialize<T>(data, t);
@@ -294,8 +504,11 @@ class Protocol extends _i1.SerializationManagerServer {
     return switch (type) {
       _i5.AdminSession => 'AdminSession',
       _i6.AdminUser => 'AdminUser',
-      _i7.Greeting => 'Greeting',
-      _i8.Post => 'Post',
+      _i7.CollectionDef => 'CollectionDef',
+      _i8.CollectionField => 'CollectionField',
+      _i9.CollectionFieldSpec => 'CollectionFieldSpec',
+      _i10.Greeting => 'Greeting',
+      _i11.Post => 'Post',
       _ => null,
     };
   }
@@ -314,9 +527,15 @@ class Protocol extends _i1.SerializationManagerServer {
         return 'AdminSession';
       case _i6.AdminUser():
         return 'AdminUser';
-      case _i7.Greeting():
+      case _i7.CollectionDef():
+        return 'CollectionDef';
+      case _i8.CollectionField():
+        return 'CollectionField';
+      case _i9.CollectionFieldSpec():
+        return 'CollectionFieldSpec';
+      case _i10.Greeting():
         return 'Greeting';
-      case _i8.Post():
+      case _i11.Post():
         return 'Post';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -346,11 +565,20 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'AdminUser') {
       return deserialize<_i6.AdminUser>(data['data']);
     }
+    if (dataClassName == 'CollectionDef') {
+      return deserialize<_i7.CollectionDef>(data['data']);
+    }
+    if (dataClassName == 'CollectionField') {
+      return deserialize<_i8.CollectionField>(data['data']);
+    }
+    if (dataClassName == 'CollectionFieldSpec') {
+      return deserialize<_i9.CollectionFieldSpec>(data['data']);
+    }
     if (dataClassName == 'Greeting') {
-      return deserialize<_i7.Greeting>(data['data']);
+      return deserialize<_i10.Greeting>(data['data']);
     }
     if (dataClassName == 'Post') {
-      return deserialize<_i8.Post>(data['data']);
+      return deserialize<_i11.Post>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -392,8 +620,12 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i5.AdminSession.t;
       case _i6.AdminUser:
         return _i6.AdminUser.t;
-      case _i8.Post:
-        return _i8.Post.t;
+      case _i7.CollectionDef:
+        return _i7.CollectionDef.t;
+      case _i8.CollectionField:
+        return _i8.CollectionField.t;
+      case _i11.Post:
+        return _i11.Post.t;
     }
     return null;
   }
