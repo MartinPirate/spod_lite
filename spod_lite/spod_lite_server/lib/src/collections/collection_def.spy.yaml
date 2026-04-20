@@ -1,0 +1,13 @@
+### A user-defined collection. Each row corresponds to a dynamic `collection_<name>` table in Postgres.
+class: CollectionDef
+table: collection_def
+
+fields:
+  name: String
+  label: String
+  createdAt: DateTime?, defaultPersist=now
+
+indexes:
+  collection_def_name_uidx:
+    fields: name
+    unique: true

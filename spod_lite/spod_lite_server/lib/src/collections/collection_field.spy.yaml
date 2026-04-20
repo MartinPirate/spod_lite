@@ -1,0 +1,17 @@
+### A field on a user-defined collection. Mirrors a column in `collection_<name>`.
+class: CollectionField
+table: collection_field
+
+fields:
+  collectionDefId: int
+  name: String
+  fieldType: String
+  required: bool, default=false
+  fieldOrder: int, default=0
+
+indexes:
+  collection_field_name_by_collection:
+    fields: collectionDefId, name
+    unique: true
+  collection_field_def_idx:
+    fields: collectionDefId

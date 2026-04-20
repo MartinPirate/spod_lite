@@ -1,0 +1,8 @@
+### Transport DTO used when a caller asks the server to create a new collection.
+### Not backed by a table — just a serializable shape over the wire.
+class: CollectionFieldSpec
+
+fields:
+  name: String
+  fieldType: String
+  required: bool
