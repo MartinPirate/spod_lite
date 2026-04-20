@@ -1,0 +1,7 @@
+### Every client-visible error thrown by a Serverpod Lite endpoint.
+### Serializable so the message + code travel to the client rather than
+### getting swallowed into a generic 500.
+exception: SpodLiteException
+fields:
+  message: String
+  code: SpodLiteErrorCode

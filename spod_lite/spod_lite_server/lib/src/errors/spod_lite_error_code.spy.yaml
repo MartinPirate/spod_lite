@@ -1,0 +1,9 @@
+### Stable error taxonomy surfaced on [SpodLiteException].
+enum: SpodLiteErrorCode
+values:
+  - invalidInput   # bad name, bad password, bad field spec
+  - unauthorized   # sign-in required / invalid credentials
+  - forbidden      # admin-scope required, rule denied
+  - notFound       # collection/record doesn't exist
+  - conflict       # unique-violation / already-exists
+  - rateLimited    # too many attempts
