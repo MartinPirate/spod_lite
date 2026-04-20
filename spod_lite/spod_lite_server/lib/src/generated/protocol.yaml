@@ -18,12 +18,14 @@ records:
   - create:
   - update:
   - delete:
+  - watch:
 greeting:
   - hello:
 posts:
   - listPosts:
   - createPost:
   - deletePost:
+  - watchPosts:
 userAuth:
   - signUp:
   - signIn:

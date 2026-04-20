@@ -21,20 +21,22 @@ import 'admin/admin_user.dart' as _i6;
 import 'collections/collection_def.dart' as _i7;
 import 'collections/collection_field.dart' as _i8;
 import 'collections/collection_field_spec.dart' as _i9;
-import 'greetings/greeting.dart' as _i10;
-import 'posts/post.dart' as _i11;
-import 'users/app_session.dart' as _i12;
-import 'users/app_user.dart' as _i13;
+import 'collections/record_event.dart' as _i10;
+import 'greetings/greeting.dart' as _i11;
+import 'posts/post.dart' as _i12;
+import 'users/app_session.dart' as _i13;
+import 'users/app_user.dart' as _i14;
 import 'package:spod_lite_server/src/generated/collections/collection_def.dart'
-    as _i14;
-import 'package:spod_lite_server/src/generated/collections/collection_field.dart'
     as _i15;
-import 'package:spod_lite_server/src/generated/posts/post.dart' as _i16;
+import 'package:spod_lite_server/src/generated/collections/collection_field.dart'
+    as _i16;
+import 'package:spod_lite_server/src/generated/posts/post.dart' as _i17;
 export 'admin/admin_session.dart';
 export 'admin/admin_user.dart';
 export 'collections/collection_def.dart';
 export 'collections/collection_field.dart';
 export 'collections/collection_field_spec.dart';
+export 'collections/record_event.dart';
 export 'greetings/greeting.dart';
 export 'posts/post.dart';
 export 'users/app_session.dart';
@@ -620,17 +622,20 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i9.CollectionFieldSpec) {
       return _i9.CollectionFieldSpec.fromJson(data) as T;
     }
-    if (t == _i10.Greeting) {
-      return _i10.Greeting.fromJson(data) as T;
+    if (t == _i10.RecordEvent) {
+      return _i10.RecordEvent.fromJson(data) as T;
     }
-    if (t == _i11.Post) {
-      return _i11.Post.fromJson(data) as T;
+    if (t == _i11.Greeting) {
+      return _i11.Greeting.fromJson(data) as T;
     }
-    if (t == _i12.AppSession) {
-      return _i12.AppSession.fromJson(data) as T;
+    if (t == _i12.Post) {
+      return _i12.Post.fromJson(data) as T;
     }
-    if (t == _i13.AppUser) {
-      return _i13.AppUser.fromJson(data) as T;
+    if (t == _i13.AppSession) {
+      return _i13.AppSession.fromJson(data) as T;
+    }
+    if (t == _i14.AppUser) {
+      return _i14.AppUser.fromJson(data) as T;
     }
     if (t == _i1.getType<_i5.AdminSession?>()) {
       return (data != null ? _i5.AdminSession.fromJson(data) : null) as T;
@@ -648,35 +653,38 @@ class Protocol extends _i1.SerializationManagerServer {
       return (data != null ? _i9.CollectionFieldSpec.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i10.Greeting?>()) {
-      return (data != null ? _i10.Greeting.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i10.RecordEvent?>()) {
+      return (data != null ? _i10.RecordEvent.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i11.Post?>()) {
-      return (data != null ? _i11.Post.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i11.Greeting?>()) {
+      return (data != null ? _i11.Greeting.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i12.AppSession?>()) {
-      return (data != null ? _i12.AppSession.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i12.Post?>()) {
+      return (data != null ? _i12.Post.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i13.AppUser?>()) {
-      return (data != null ? _i13.AppUser.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i13.AppSession?>()) {
+      return (data != null ? _i13.AppSession.fromJson(data) : null) as T;
     }
-    if (t == List<_i14.CollectionDef>) {
+    if (t == _i1.getType<_i14.AppUser?>()) {
+      return (data != null ? _i14.AppUser.fromJson(data) : null) as T;
+    }
+    if (t == List<_i15.CollectionDef>) {
       return (data as List)
-              .map((e) => deserialize<_i14.CollectionDef>(e))
+              .map((e) => deserialize<_i15.CollectionDef>(e))
               .toList()
           as T;
     }
-    if (t == List<_i15.CollectionField>) {
+    if (t == List<_i16.CollectionField>) {
       return (data as List)
-              .map((e) => deserialize<_i15.CollectionField>(e))
+              .map((e) => deserialize<_i16.CollectionField>(e))
               .toList()
           as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i16.Post>) {
-      return (data as List).map((e) => deserialize<_i16.Post>(e)).toList() as T;
+    if (t == List<_i17.Post>) {
+      return (data as List).map((e) => deserialize<_i17.Post>(e)).toList() as T;
     }
     try {
       return _i3.Protocol().deserialize<T>(data, t);
@@ -697,10 +705,11 @@ class Protocol extends _i1.SerializationManagerServer {
       _i7.CollectionDef => 'CollectionDef',
       _i8.CollectionField => 'CollectionField',
       _i9.CollectionFieldSpec => 'CollectionFieldSpec',
-      _i10.Greeting => 'Greeting',
-      _i11.Post => 'Post',
-      _i12.AppSession => 'AppSession',
-      _i13.AppUser => 'AppUser',
+      _i10.RecordEvent => 'RecordEvent',
+      _i11.Greeting => 'Greeting',
+      _i12.Post => 'Post',
+      _i13.AppSession => 'AppSession',
+      _i14.AppUser => 'AppUser',
       _ => null,
     };
   }
@@ -725,13 +734,15 @@ class Protocol extends _i1.SerializationManagerServer {
         return 'CollectionField';
       case _i9.CollectionFieldSpec():
         return 'CollectionFieldSpec';
-      case _i10.Greeting():
+      case _i10.RecordEvent():
+        return 'RecordEvent';
+      case _i11.Greeting():
         return 'Greeting';
-      case _i11.Post():
+      case _i12.Post():
         return 'Post';
-      case _i12.AppSession():
+      case _i13.AppSession():
         return 'AppSession';
-      case _i13.AppUser():
+      case _i14.AppUser():
         return 'AppUser';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -770,17 +781,20 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'CollectionFieldSpec') {
       return deserialize<_i9.CollectionFieldSpec>(data['data']);
     }
+    if (dataClassName == 'RecordEvent') {
+      return deserialize<_i10.RecordEvent>(data['data']);
+    }
     if (dataClassName == 'Greeting') {
-      return deserialize<_i10.Greeting>(data['data']);
+      return deserialize<_i11.Greeting>(data['data']);
     }
     if (dataClassName == 'Post') {
-      return deserialize<_i11.Post>(data['data']);
+      return deserialize<_i12.Post>(data['data']);
     }
     if (dataClassName == 'AppSession') {
-      return deserialize<_i12.AppSession>(data['data']);
+      return deserialize<_i13.AppSession>(data['data']);
     }
     if (dataClassName == 'AppUser') {
-      return deserialize<_i13.AppUser>(data['data']);
+      return deserialize<_i14.AppUser>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -826,12 +840,12 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i7.CollectionDef.t;
       case _i8.CollectionField:
         return _i8.CollectionField.t;
-      case _i11.Post:
-        return _i11.Post.t;
-      case _i12.AppSession:
-        return _i12.AppSession.t;
-      case _i13.AppUser:
-        return _i13.AppUser.t;
+      case _i12.Post:
+        return _i12.Post.t;
+      case _i13.AppSession:
+        return _i13.AppSession.t;
+      case _i14.AppUser:
+        return _i14.AppUser.t;
     }
     return null;
   }

@@ -449,6 +449,27 @@ class Endpoints extends _i1.EndpointDispatch {
                 params['id'],
               ),
         ),
+        'watch': _i1.MethodStreamConnector(
+          name: 'watch',
+          params: {
+            'collectionName': _i1.ParameterDescription(
+              name: 'collectionName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          streamParams: {},
+          returnType: _i1.MethodStreamReturnType.streamType,
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+                Map<String, Stream> streamParams,
+              ) => (endpoints['records'] as _i4.RecordsEndpoint).watch(
+                session,
+                params['collectionName'],
+              ),
+        ),
       },
     );
     connectors['greeting'] = _i1.EndpointConnector(
@@ -530,6 +551,19 @@ class Endpoints extends _i1.EndpointDispatch {
                 session,
                 params['id'],
               ),
+        ),
+        'watchPosts': _i1.MethodStreamConnector(
+          name: 'watchPosts',
+          params: {},
+          streamParams: {},
+          returnType: _i1.MethodStreamReturnType.streamType,
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+                Map<String, Stream> streamParams,
+              ) =>
+                  (endpoints['posts'] as _i6.PostsEndpoint).watchPosts(session),
         ),
       },
     );

@@ -17,14 +17,16 @@ import 'package:spod_lite_client/src/protocol/collections/collection_def.dart'
     as _i4;
 import 'package:spod_lite_client/src/protocol/collections/collection_field.dart'
     as _i5;
-import 'package:spod_lite_client/src/protocol/greetings/greeting.dart' as _i6;
-import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i7;
-import 'package:spod_lite_client/src/protocol/users/app_user.dart' as _i8;
+import 'package:spod_lite_client/src/protocol/collections/record_event.dart'
+    as _i6;
+import 'package:spod_lite_client/src/protocol/greetings/greeting.dart' as _i7;
+import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i8;
+import 'package:spod_lite_client/src/protocol/users/app_user.dart' as _i9;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
-    as _i9;
-import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _i10;
-import 'protocol.dart' as _i11;
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+    as _i11;
+import 'protocol.dart' as _i12;
 
 /// {@category Endpoint}
 class EndpointAdminAuth extends _i1.EndpointRef {
@@ -243,6 +245,19 @@ class EndpointRecords extends _i1.EndpointRef {
       'id': id,
     },
   );
+
+  /// Live stream of record events for a collection. Enforces the same
+  /// rule as `list`.
+  _i2.Stream<_i6.RecordEvent> watch(String collectionName) =>
+      caller.callStreamingServerEndpoint<
+        _i2.Stream<_i6.RecordEvent>,
+        _i6.RecordEvent
+      >(
+        'records',
+        'watch',
+        {'collectionName': collectionName},
+        {},
+      );
 }
 
 /// This is an example endpoint that returns a greeting message through
@@ -255,14 +270,18 @@ class EndpointGreeting extends _i1.EndpointRef {
   String get name => 'greeting';
 
   /// Returns a personalized greeting message: "Hello {name}".
-  _i2.Future<_i6.Greeting> hello(String name) =>
-      caller.callServerEndpoint<_i6.Greeting>(
+  _i2.Future<_i7.Greeting> hello(String name) =>
+      caller.callServerEndpoint<_i7.Greeting>(
         'greeting',
         'hello',
         {'name': name},
       );
 }
 
+/// Legacy demo endpoint kept around for the demo app. Gated via
+/// `requireLogin` so any authenticated caller (admin or end-user) can use
+/// it. New work should prefer the generic collections/records API which
+/// supports per-op rules.
 /// {@category Endpoint}
 class EndpointPosts extends _i1.EndpointRef {
   EndpointPosts(_i1.EndpointCaller caller) : super(caller);
@@ -270,17 +289,17 @@ class EndpointPosts extends _i1.EndpointRef {
   @override
   String get name => 'posts';
 
-  _i2.Future<List<_i7.Post>> listPosts() =>
-      caller.callServerEndpoint<List<_i7.Post>>(
+  _i2.Future<List<_i8.Post>> listPosts() =>
+      caller.callServerEndpoint<List<_i8.Post>>(
         'posts',
         'listPosts',
         {},
       );
 
-  _i2.Future<_i7.Post> createPost(
+  _i2.Future<_i8.Post> createPost(
     String title,
     String body,
-  ) => caller.callServerEndpoint<_i7.Post>(
+  ) => caller.callServerEndpoint<_i8.Post>(
     'posts',
     'createPost',
     {
@@ -294,6 +313,16 @@ class EndpointPosts extends _i1.EndpointRef {
     'deletePost',
     {'id': id},
   );
+
+  /// Live feed — every new post from [createPost] is pushed to subscribers
+  /// over a WebSocket. Useful primarily for the demo app.
+  _i2.Stream<_i8.Post> watchPosts() =>
+      caller.callStreamingServerEndpoint<_i2.Stream<_i8.Post>, _i8.Post>(
+        'posts',
+        'watchPosts',
+        {},
+        {},
+      );
 }
 
 /// Self-serve end-user auth. Public endpoint — anyone can hit `signUp`
@@ -331,8 +360,8 @@ class EndpointUserAuth extends _i1.EndpointRef {
     },
   );
 
-  _i2.Future<_i8.AppUser?> me(String token) =>
-      caller.callServerEndpoint<_i8.AppUser?>(
+  _i2.Future<_i9.AppUser?> me(String token) =>
+      caller.callServerEndpoint<_i9.AppUser?>(
         'userAuth',
         'me',
         {'token': token},
@@ -347,13 +376,13 @@ class EndpointUserAuth extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    serverpod_auth_idp = _i9.Caller(client);
-    serverpod_auth_core = _i10.Caller(client);
+    serverpod_auth_idp = _i10.Caller(client);
+    serverpod_auth_core = _i11.Caller(client);
   }
 
-  late final _i9.Caller serverpod_auth_idp;
+  late final _i10.Caller serverpod_auth_idp;
 
-  late final _i10.Caller serverpod_auth_core;
+  late final _i11.Caller serverpod_auth_core;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -376,7 +405,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i11.Protocol(),
+         _i12.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
