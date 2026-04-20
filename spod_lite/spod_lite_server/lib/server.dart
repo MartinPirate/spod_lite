@@ -21,6 +21,10 @@ void run(List<String> args) async {
     authenticationHandler: chainedAuthenticationHandler,
   );
 
+  // Database-backed file storage under the 'public' bucket. Files are
+  // served via Serverpod's built-in /serverpod_cloud_storage endpoint.
+  pod.addCloudStorage(DatabaseCloudStorage('public'));
+
   // Setup a default page at the web root.
   // These are used by the default page.
   pod.webServer.addRoute(RootRoute(), '/');

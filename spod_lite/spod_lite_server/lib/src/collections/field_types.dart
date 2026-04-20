@@ -8,6 +8,7 @@ const Set<String> knownFieldTypes = {
   'bool',
   'datetime',
   'json',
+  'file',
 };
 
 bool isKnownFieldType(String t) => knownFieldTypes.contains(t);
@@ -26,6 +27,9 @@ String sqlTypeFor(String t) {
       return 'timestamp with time zone';
     case 'json':
       return 'jsonb';
+    case 'file':
+      // Stores the public URL returned by the cloud storage after upload.
+      return 'text';
     default:
       throw ArgumentError('Unknown field type: $t');
   }
