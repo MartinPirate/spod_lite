@@ -28,11 +28,13 @@ import 'greetings/greeting.dart' as _i13;
 import 'posts/post.dart' as _i14;
 import 'users/app_session.dart' as _i15;
 import 'users/app_user.dart' as _i16;
+import 'package:spod_lite_server/src/generated/admin/admin_user.dart' as _i17;
 import 'package:spod_lite_server/src/generated/collections/collection_def.dart'
-    as _i17;
-import 'package:spod_lite_server/src/generated/collections/collection_field.dart'
     as _i18;
-import 'package:spod_lite_server/src/generated/posts/post.dart' as _i19;
+import 'package:spod_lite_server/src/generated/collections/collection_field.dart'
+    as _i19;
+import 'package:spod_lite_server/src/generated/posts/post.dart' as _i20;
+import 'package:spod_lite_server/src/generated/users/app_user.dart' as _i21;
 export 'admin/admin_session.dart';
 export 'admin/admin_user.dart';
 export 'collections/collection_def.dart';
@@ -684,23 +686,31 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i16.AppUser?>()) {
       return (data != null ? _i16.AppUser.fromJson(data) : null) as T;
     }
-    if (t == List<_i17.CollectionDef>) {
+    if (t == List<_i17.AdminUser>) {
+      return (data as List).map((e) => deserialize<_i17.AdminUser>(e)).toList()
+          as T;
+    }
+    if (t == List<_i18.CollectionDef>) {
       return (data as List)
-              .map((e) => deserialize<_i17.CollectionDef>(e))
+              .map((e) => deserialize<_i18.CollectionDef>(e))
               .toList()
           as T;
     }
-    if (t == List<_i18.CollectionField>) {
+    if (t == List<_i19.CollectionField>) {
       return (data as List)
-              .map((e) => deserialize<_i18.CollectionField>(e))
+              .map((e) => deserialize<_i19.CollectionField>(e))
               .toList()
           as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i19.Post>) {
-      return (data as List).map((e) => deserialize<_i19.Post>(e)).toList() as T;
+    if (t == List<_i20.Post>) {
+      return (data as List).map((e) => deserialize<_i20.Post>(e)).toList() as T;
+    }
+    if (t == List<_i21.AppUser>) {
+      return (data as List).map((e) => deserialize<_i21.AppUser>(e)).toList()
+          as T;
     }
     try {
       return _i3.Protocol().deserialize<T>(data, t);

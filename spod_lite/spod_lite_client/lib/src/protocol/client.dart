@@ -80,6 +80,46 @@ class EndpointAdminAuth extends _i1.EndpointRef {
   );
 }
 
+/// Admin-only API for managing *other* admin users.
+/// {@category Endpoint}
+class EndpointAdmins extends _i1.EndpointRef {
+  EndpointAdmins(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'admins';
+
+  _i2.Future<List<_i3.AdminUser>> list() =>
+      caller.callServerEndpoint<List<_i3.AdminUser>>(
+        'admins',
+        'list',
+        {},
+      );
+
+  _i2.Future<int> count() => caller.callServerEndpoint<int>(
+    'admins',
+    'count',
+    {},
+  );
+
+  _i2.Future<_i3.AdminUser> invite(
+    String email,
+    String password,
+  ) => caller.callServerEndpoint<_i3.AdminUser>(
+    'admins',
+    'invite',
+    {
+      'email': email,
+      'password': password,
+    },
+  );
+
+  _i2.Future<void> revoke(int adminId) => caller.callServerEndpoint<void>(
+    'admins',
+    'revoke',
+    {'adminId': adminId},
+  );
+}
+
 /// Dashboard-side API for creating and listing user-defined collections.
 ///
 /// Each collection is backed by a dynamically-created `collection_<name>`
@@ -307,6 +347,39 @@ class EndpointRecords extends _i1.EndpointRef {
       );
 }
 
+/// Admin-only API for the email module. For now: expose the active
+/// driver name and a test-send. Password-reset / verification flows
+/// will go on this surface later.
+/// {@category Endpoint}
+class EndpointEmails extends _i1.EndpointRef {
+  EndpointEmails(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'emails';
+
+  /// Returns which driver is currently active (`console` by default,
+  /// `smtp` if the server was booted with SPOD_SMTP_* env vars).
+  _i2.Future<String> driverName() => caller.callServerEndpoint<String>(
+    'emails',
+    'driverName',
+    {},
+  );
+
+  _i2.Future<void> sendTest(
+    String to,
+    String subject,
+    String body,
+  ) => caller.callServerEndpoint<void>(
+    'emails',
+    'sendTest',
+    {
+      'to': to,
+      'subject': subject,
+      'body': body,
+    },
+  );
+}
+
 /// This is an example endpoint that returns a greeting message through
 /// its [hello] method.
 /// {@category Endpoint}
@@ -323,6 +396,30 @@ class EndpointGreeting extends _i1.EndpointRef {
         'hello',
         {'name': name},
       );
+}
+
+/// Admin-only read of Serverpod's recent session log table. Each row
+/// is returned as a JSON string so the client can render arbitrary
+/// columns without us inventing a transport type.
+/// {@category Endpoint}
+class EndpointLogs extends _i1.EndpointRef {
+  EndpointLogs(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'logs';
+
+  _i2.Future<List<String>> recent(int limit) =>
+      caller.callServerEndpoint<List<String>>(
+        'logs',
+        'recent',
+        {'limit': limit},
+      );
+
+  _i2.Future<int> count() => caller.callServerEndpoint<int>(
+    'logs',
+    'count',
+    {},
+  );
 }
 
 /// Legacy demo endpoint kept around for the demo app. Gated via
@@ -421,6 +518,52 @@ class EndpointUserAuth extends _i1.EndpointRef {
   );
 }
 
+/// Admin-only API for managing end-user accounts.
+/// {@category Endpoint}
+class EndpointUsers extends _i1.EndpointRef {
+  EndpointUsers(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'users';
+
+  _i2.Future<List<_i10.AppUser>> list({
+    required int page,
+    required int perPage,
+  }) => caller.callServerEndpoint<List<_i10.AppUser>>(
+    'users',
+    'list',
+    {
+      'page': page,
+      'perPage': perPage,
+    },
+  );
+
+  _i2.Future<int> count() => caller.callServerEndpoint<int>(
+    'users',
+    'count',
+    {},
+  );
+
+  _i2.Future<int> sessionCount(int userId) => caller.callServerEndpoint<int>(
+    'users',
+    'sessionCount',
+    {'userId': userId},
+  );
+
+  _i2.Future<void> revokeSessions(int userId) =>
+      caller.callServerEndpoint<void>(
+        'users',
+        'revokeSessions',
+        {'userId': userId},
+      );
+
+  _i2.Future<void> delete(int userId) => caller.callServerEndpoint<void>(
+    'users',
+    'delete',
+    {'userId': userId},
+  );
+}
+
 class Modules {
   Modules(Client client) {
     serverpod_auth_idp = _i11.Caller(client);
@@ -462,16 +605,22 @@ class Client extends _i1.ServerpodClientShared {
              disconnectStreamsOnLostInternetConnection,
        ) {
     adminAuth = EndpointAdminAuth(this);
+    admins = EndpointAdmins(this);
     collections = EndpointCollections(this);
     files = EndpointFiles(this);
     records = EndpointRecords(this);
+    emails = EndpointEmails(this);
     greeting = EndpointGreeting(this);
+    logs = EndpointLogs(this);
     posts = EndpointPosts(this);
     userAuth = EndpointUserAuth(this);
+    users = EndpointUsers(this);
     modules = Modules(this);
   }
 
   late final EndpointAdminAuth adminAuth;
+
+  late final EndpointAdmins admins;
 
   late final EndpointCollections collections;
 
@@ -479,23 +628,33 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointRecords records;
 
+  late final EndpointEmails emails;
+
   late final EndpointGreeting greeting;
+
+  late final EndpointLogs logs;
 
   late final EndpointPosts posts;
 
   late final EndpointUserAuth userAuth;
+
+  late final EndpointUsers users;
 
   late final Modules modules;
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
     'adminAuth': adminAuth,
+    'admins': admins,
     'collections': collections,
     'files': files,
     'records': records,
+    'emails': emails,
     'greeting': greeting,
+    'logs': logs,
     'posts': posts,
     'userAuth': userAuth,
+    'users': users,
   };
 
   @override

@@ -23,15 +23,17 @@ import 'greetings/greeting.dart' as _i10;
 import 'posts/post.dart' as _i11;
 import 'users/app_session.dart' as _i12;
 import 'users/app_user.dart' as _i13;
+import 'package:spod_lite_client/src/protocol/admin/admin_user.dart' as _i14;
 import 'package:spod_lite_client/src/protocol/collections/collection_def.dart'
-    as _i14;
-import 'package:spod_lite_client/src/protocol/collections/collection_field.dart'
     as _i15;
-import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i16;
+import 'package:spod_lite_client/src/protocol/collections/collection_field.dart'
+    as _i16;
+import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i17;
+import 'package:spod_lite_client/src/protocol/users/app_user.dart' as _i18;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
-    as _i17;
+    as _i19;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
-    as _i18;
+    as _i20;
 export 'admin/admin_session.dart';
 export 'admin/admin_user.dart';
 export 'collections/collection_def.dart';
@@ -153,29 +155,37 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i13.AppUser?>()) {
       return (data != null ? _i13.AppUser.fromJson(data) : null) as T;
     }
-    if (t == List<_i14.CollectionDef>) {
+    if (t == List<_i14.AdminUser>) {
+      return (data as List).map((e) => deserialize<_i14.AdminUser>(e)).toList()
+          as T;
+    }
+    if (t == List<_i15.CollectionDef>) {
       return (data as List)
-              .map((e) => deserialize<_i14.CollectionDef>(e))
+              .map((e) => deserialize<_i15.CollectionDef>(e))
               .toList()
           as T;
     }
-    if (t == List<_i15.CollectionField>) {
+    if (t == List<_i16.CollectionField>) {
       return (data as List)
-              .map((e) => deserialize<_i15.CollectionField>(e))
+              .map((e) => deserialize<_i16.CollectionField>(e))
               .toList()
           as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i16.Post>) {
-      return (data as List).map((e) => deserialize<_i16.Post>(e)).toList() as T;
+    if (t == List<_i17.Post>) {
+      return (data as List).map((e) => deserialize<_i17.Post>(e)).toList() as T;
+    }
+    if (t == List<_i18.AppUser>) {
+      return (data as List).map((e) => deserialize<_i18.AppUser>(e)).toList()
+          as T;
     }
     try {
-      return _i17.Protocol().deserialize<T>(data, t);
+      return _i19.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     try {
-      return _i18.Protocol().deserialize<T>(data, t);
+      return _i20.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -233,11 +243,11 @@ class Protocol extends _i1.SerializationManager {
       case _i13.AppUser():
         return 'AppUser';
     }
-    className = _i17.Protocol().getClassNameForObject(data);
+    className = _i19.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_idp.$className';
     }
-    className = _i18.Protocol().getClassNameForObject(data);
+    className = _i20.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_core.$className';
     }
@@ -288,11 +298,11 @@ class Protocol extends _i1.SerializationManager {
     }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);
-      return _i17.Protocol().deserializeByClassName(data);
+      return _i19.Protocol().deserializeByClassName(data);
     }
     if (dataClassName.startsWith('serverpod_auth_core.')) {
       data['className'] = dataClassName.substring(20);
-      return _i18.Protocol().deserializeByClassName(data);
+      return _i20.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }
@@ -307,10 +317,10 @@ class Protocol extends _i1.SerializationManager {
       return null;
     }
     try {
-      return _i17.Protocol().mapRecordToJson(record);
+      return _i19.Protocol().mapRecordToJson(record);
     } catch (_) {}
     try {
-      return _i18.Protocol().mapRecordToJson(record);
+      return _i20.Protocol().mapRecordToJson(record);
     } catch (_) {}
     throw Exception('Unsupported record type ${record.runtimeType}');
   }

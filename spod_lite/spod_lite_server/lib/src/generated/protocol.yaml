@@ -4,6 +4,11 @@ adminAuth:
   - signIn:
   - me:
   - signOut:
+admins:
+  - list:
+  - count:
+  - invite:
+  - revoke:
 collections:
   - list:
   - get:
@@ -22,8 +27,14 @@ records:
   - update:
   - delete:
   - watch:
+emails:
+  - driverName:
+  - sendTest:
 greeting:
   - hello:
+logs:
+  - recent:
+  - count:
 posts:
   - listPosts:
   - createPost:
@@ -34,3 +45,9 @@ userAuth:
   - signIn:
   - me:
   - signOut:
+users:
+  - list:
+  - count:
+  - sessionCount:
+  - revokeSessions:
+  - delete:
