@@ -1,0 +1,8 @@
+### A blog post — the M0 hardcoded "collection" that proves the dashboard loop works.
+class: Post
+table: post
+
+fields:
+  title: String
+  body: String
+  createdAt: DateTime?, defaultPersist=now

@@ -1,0 +1,12 @@
+adminAuth:
+  - hasAdmins:
+  - createFirstAdmin:
+  - signIn:
+  - me:
+  - signOut:
+greeting:
+  - hello:
+posts:
+  - listPosts:
+  - createPost:
+  - deletePost:
