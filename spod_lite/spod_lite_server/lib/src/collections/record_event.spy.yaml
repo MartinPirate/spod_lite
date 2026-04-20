@@ -1,0 +1,11 @@
+### A realtime event emitted whenever a record in a user-defined
+### collection is created, updated, or deleted. Delivered via Serverpod's
+### MessageCentral on the `records:<collection>` channel.
+class: RecordEvent
+
+fields:
+  type: String
+  collectionName: String
+  recordId: int
+  recordJson: String?
+  at: DateTime
