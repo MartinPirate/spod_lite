@@ -17,16 +17,17 @@ import 'package:spod_lite_client/src/protocol/collections/collection_def.dart'
     as _i4;
 import 'package:spod_lite_client/src/protocol/collections/collection_field.dart'
     as _i5;
+import 'dart:typed_data' as _i6;
 import 'package:spod_lite_client/src/protocol/collections/record_event.dart'
-    as _i6;
-import 'package:spod_lite_client/src/protocol/greetings/greeting.dart' as _i7;
-import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i8;
-import 'package:spod_lite_client/src/protocol/users/app_user.dart' as _i9;
+    as _i7;
+import 'package:spod_lite_client/src/protocol/greetings/greeting.dart' as _i8;
+import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i9;
+import 'package:spod_lite_client/src/protocol/users/app_user.dart' as _i10;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
-    as _i10;
-import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _i11;
-import 'protocol.dart' as _i12;
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+    as _i12;
+import 'protocol.dart' as _i13;
 
 /// {@category Endpoint}
 class EndpointAdminAuth extends _i1.EndpointRef {
@@ -158,6 +159,52 @@ class EndpointCollections extends _i1.EndpointRef {
   );
 }
 
+/// Upload/delete files attached to records on user-defined collections.
+///
+/// The public URL is written into the record's column (type 'file'), and
+/// served back via Serverpod's built-in `/serverpod_cloud_storage/file`
+/// endpoint. Rule enforcement mirrors record writes: `createRule` for
+/// uploads, `deleteRule` for removals.
+/// {@category Endpoint}
+class EndpointFiles extends _i1.EndpointRef {
+  EndpointFiles(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'files';
+
+  _i2.Future<String> upload(
+    String collectionName,
+    int recordId,
+    String fieldName,
+    _i6.ByteData bytes,
+    String filename,
+  ) => caller.callServerEndpoint<String>(
+    'files',
+    'upload',
+    {
+      'collectionName': collectionName,
+      'recordId': recordId,
+      'fieldName': fieldName,
+      'bytes': bytes,
+      'filename': filename,
+    },
+  );
+
+  _i2.Future<void> delete(
+    String collectionName,
+    int recordId,
+    String fieldName,
+  ) => caller.callServerEndpoint<void>(
+    'files',
+    'delete',
+    {
+      'collectionName': collectionName,
+      'recordId': recordId,
+      'fieldName': fieldName,
+    },
+  );
+}
+
 /// Generic CRUD over user-defined collections.
 ///
 /// Records are passed across the wire as JSON strings because Serverpod's
@@ -248,10 +295,10 @@ class EndpointRecords extends _i1.EndpointRef {
 
   /// Live stream of record events for a collection. Enforces the same
   /// rule as `list`.
-  _i2.Stream<_i6.RecordEvent> watch(String collectionName) =>
+  _i2.Stream<_i7.RecordEvent> watch(String collectionName) =>
       caller.callStreamingServerEndpoint<
-        _i2.Stream<_i6.RecordEvent>,
-        _i6.RecordEvent
+        _i2.Stream<_i7.RecordEvent>,
+        _i7.RecordEvent
       >(
         'records',
         'watch',
@@ -270,8 +317,8 @@ class EndpointGreeting extends _i1.EndpointRef {
   String get name => 'greeting';
 
   /// Returns a personalized greeting message: "Hello {name}".
-  _i2.Future<_i7.Greeting> hello(String name) =>
-      caller.callServerEndpoint<_i7.Greeting>(
+  _i2.Future<_i8.Greeting> hello(String name) =>
+      caller.callServerEndpoint<_i8.Greeting>(
         'greeting',
         'hello',
         {'name': name},
@@ -289,17 +336,17 @@ class EndpointPosts extends _i1.EndpointRef {
   @override
   String get name => 'posts';
 
-  _i2.Future<List<_i8.Post>> listPosts() =>
-      caller.callServerEndpoint<List<_i8.Post>>(
+  _i2.Future<List<_i9.Post>> listPosts() =>
+      caller.callServerEndpoint<List<_i9.Post>>(
         'posts',
         'listPosts',
         {},
       );
 
-  _i2.Future<_i8.Post> createPost(
+  _i2.Future<_i9.Post> createPost(
     String title,
     String body,
-  ) => caller.callServerEndpoint<_i8.Post>(
+  ) => caller.callServerEndpoint<_i9.Post>(
     'posts',
     'createPost',
     {
@@ -316,8 +363,8 @@ class EndpointPosts extends _i1.EndpointRef {
 
   /// Live feed — every new post from [createPost] is pushed to subscribers
   /// over a WebSocket. Useful primarily for the demo app.
-  _i2.Stream<_i8.Post> watchPosts() =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i8.Post>, _i8.Post>(
+  _i2.Stream<_i9.Post> watchPosts() =>
+      caller.callStreamingServerEndpoint<_i2.Stream<_i9.Post>, _i9.Post>(
         'posts',
         'watchPosts',
         {},
@@ -360,8 +407,8 @@ class EndpointUserAuth extends _i1.EndpointRef {
     },
   );
 
-  _i2.Future<_i9.AppUser?> me(String token) =>
-      caller.callServerEndpoint<_i9.AppUser?>(
+  _i2.Future<_i10.AppUser?> me(String token) =>
+      caller.callServerEndpoint<_i10.AppUser?>(
         'userAuth',
         'me',
         {'token': token},
@@ -376,13 +423,13 @@ class EndpointUserAuth extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    serverpod_auth_idp = _i10.Caller(client);
-    serverpod_auth_core = _i11.Caller(client);
+    serverpod_auth_idp = _i11.Caller(client);
+    serverpod_auth_core = _i12.Caller(client);
   }
 
-  late final _i10.Caller serverpod_auth_idp;
+  late final _i11.Caller serverpod_auth_idp;
 
-  late final _i11.Caller serverpod_auth_core;
+  late final _i12.Caller serverpod_auth_core;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -405,7 +452,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i12.Protocol(),
+         _i13.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -416,6 +463,7 @@ class Client extends _i1.ServerpodClientShared {
        ) {
     adminAuth = EndpointAdminAuth(this);
     collections = EndpointCollections(this);
+    files = EndpointFiles(this);
     records = EndpointRecords(this);
     greeting = EndpointGreeting(this);
     posts = EndpointPosts(this);
@@ -426,6 +474,8 @@ class Client extends _i1.ServerpodClientShared {
   late final EndpointAdminAuth adminAuth;
 
   late final EndpointCollections collections;
+
+  late final EndpointFiles files;
 
   late final EndpointRecords records;
 
@@ -441,6 +491,7 @@ class Client extends _i1.ServerpodClientShared {
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
     'adminAuth': adminAuth,
     'collections': collections,
+    'files': files,
     'records': records,
     'greeting': greeting,
     'posts': posts,

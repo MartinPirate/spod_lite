@@ -13,14 +13,16 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../admin/admin_auth_endpoint.dart' as _i2;
 import '../collections/collections_endpoint.dart' as _i3;
-import '../collections/records_endpoint.dart' as _i4;
-import '../greetings/greeting_endpoint.dart' as _i5;
-import '../posts/posts_endpoint.dart' as _i6;
-import '../users/user_auth_endpoint.dart' as _i7;
+import '../collections/files_endpoint.dart' as _i4;
+import '../collections/records_endpoint.dart' as _i5;
+import '../greetings/greeting_endpoint.dart' as _i6;
+import '../posts/posts_endpoint.dart' as _i7;
+import '../users/user_auth_endpoint.dart' as _i8;
+import 'dart:typed_data' as _i9;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _i8;
+    as _i10;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
-    as _i9;
+    as _i11;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -38,25 +40,31 @@ class Endpoints extends _i1.EndpointDispatch {
           'collections',
           null,
         ),
-      'records': _i4.RecordsEndpoint()
+      'files': _i4.FilesEndpoint()
+        ..initialize(
+          server,
+          'files',
+          null,
+        ),
+      'records': _i5.RecordsEndpoint()
         ..initialize(
           server,
           'records',
           null,
         ),
-      'greeting': _i5.GreetingEndpoint()
+      'greeting': _i6.GreetingEndpoint()
         ..initialize(
           server,
           'greeting',
           null,
         ),
-      'posts': _i6.PostsEndpoint()
+      'posts': _i7.PostsEndpoint()
         ..initialize(
           server,
           'posts',
           null,
         ),
-      'userAuth': _i7.UserAuthEndpoint()
+      'userAuth': _i8.UserAuthEndpoint()
         ..initialize(
           server,
           'userAuth',
@@ -295,6 +303,84 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
+    connectors['files'] = _i1.EndpointConnector(
+      name: 'files',
+      endpoint: endpoints['files']!,
+      methodConnectors: {
+        'upload': _i1.MethodConnector(
+          name: 'upload',
+          params: {
+            'collectionName': _i1.ParameterDescription(
+              name: 'collectionName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'recordId': _i1.ParameterDescription(
+              name: 'recordId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'fieldName': _i1.ParameterDescription(
+              name: 'fieldName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'bytes': _i1.ParameterDescription(
+              name: 'bytes',
+              type: _i1.getType<_i9.ByteData>(),
+              nullable: false,
+            ),
+            'filename': _i1.ParameterDescription(
+              name: 'filename',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['files'] as _i4.FilesEndpoint).upload(
+                session,
+                params['collectionName'],
+                params['recordId'],
+                params['fieldName'],
+                params['bytes'],
+                params['filename'],
+              ),
+        ),
+        'delete': _i1.MethodConnector(
+          name: 'delete',
+          params: {
+            'collectionName': _i1.ParameterDescription(
+              name: 'collectionName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'recordId': _i1.ParameterDescription(
+              name: 'recordId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'fieldName': _i1.ParameterDescription(
+              name: 'fieldName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['files'] as _i4.FilesEndpoint).delete(
+                session,
+                params['collectionName'],
+                params['recordId'],
+                params['fieldName'],
+              ),
+        ),
+      },
+    );
     connectors['records'] = _i1.EndpointConnector(
       name: 'records',
       endpoint: endpoints['records']!,
@@ -322,7 +408,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['records'] as _i4.RecordsEndpoint).list(
+              ) async => (endpoints['records'] as _i5.RecordsEndpoint).list(
                 session,
                 params['collectionName'],
                 params['page'],
@@ -342,7 +428,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['records'] as _i4.RecordsEndpoint).count(
+              ) async => (endpoints['records'] as _i5.RecordsEndpoint).count(
                 session,
                 params['collectionName'],
               ),
@@ -365,7 +451,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['records'] as _i4.RecordsEndpoint).get(
+              ) async => (endpoints['records'] as _i5.RecordsEndpoint).get(
                 session,
                 params['collectionName'],
                 params['id'],
@@ -389,7 +475,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['records'] as _i4.RecordsEndpoint).create(
+              ) async => (endpoints['records'] as _i5.RecordsEndpoint).create(
                 session,
                 params['collectionName'],
                 params['dataJson'],
@@ -418,7 +504,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['records'] as _i4.RecordsEndpoint).update(
+              ) async => (endpoints['records'] as _i5.RecordsEndpoint).update(
                 session,
                 params['collectionName'],
                 params['id'],
@@ -443,7 +529,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['records'] as _i4.RecordsEndpoint).delete(
+              ) async => (endpoints['records'] as _i5.RecordsEndpoint).delete(
                 session,
                 params['collectionName'],
                 params['id'],
@@ -465,7 +551,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
                 Map<String, Stream> streamParams,
-              ) => (endpoints['records'] as _i4.RecordsEndpoint).watch(
+              ) => (endpoints['records'] as _i5.RecordsEndpoint).watch(
                 session,
                 params['collectionName'],
               ),
@@ -489,7 +575,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['greeting'] as _i5.GreetingEndpoint).hello(
+              ) async => (endpoints['greeting'] as _i6.GreetingEndpoint).hello(
                 session,
                 params['name'],
               ),
@@ -508,7 +594,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['posts'] as _i6.PostsEndpoint).listPosts(session),
+                  (endpoints['posts'] as _i7.PostsEndpoint).listPosts(session),
         ),
         'createPost': _i1.MethodConnector(
           name: 'createPost',
@@ -528,7 +614,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['posts'] as _i6.PostsEndpoint).createPost(
+              ) async => (endpoints['posts'] as _i7.PostsEndpoint).createPost(
                 session,
                 params['title'],
                 params['body'],
@@ -547,7 +633,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['posts'] as _i6.PostsEndpoint).deletePost(
+              ) async => (endpoints['posts'] as _i7.PostsEndpoint).deletePost(
                 session,
                 params['id'],
               ),
@@ -563,7 +649,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 Map<String, dynamic> params,
                 Map<String, Stream> streamParams,
               ) =>
-                  (endpoints['posts'] as _i6.PostsEndpoint).watchPosts(session),
+                  (endpoints['posts'] as _i7.PostsEndpoint).watchPosts(session),
         ),
       },
     );
@@ -589,7 +675,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['userAuth'] as _i7.UserAuthEndpoint).signUp(
+              ) async => (endpoints['userAuth'] as _i8.UserAuthEndpoint).signUp(
                 session,
                 params['email'],
                 params['password'],
@@ -613,7 +699,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['userAuth'] as _i7.UserAuthEndpoint).signIn(
+              ) async => (endpoints['userAuth'] as _i8.UserAuthEndpoint).signIn(
                 session,
                 params['email'],
                 params['password'],
@@ -632,7 +718,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['userAuth'] as _i7.UserAuthEndpoint).me(
+              ) async => (endpoints['userAuth'] as _i8.UserAuthEndpoint).me(
                 session,
                 params['token'],
               ),
@@ -651,16 +737,16 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['userAuth'] as _i7.UserAuthEndpoint).signOut(
+                  (endpoints['userAuth'] as _i8.UserAuthEndpoint).signOut(
                     session,
                     params['token'],
                   ),
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _i8.Endpoints()
+    modules['serverpod_auth_idp'] = _i10.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i9.Endpoints()
+    modules['serverpod_auth_core'] = _i11.Endpoints()
       ..initializeEndpoints(server);
   }
 }

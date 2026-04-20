@@ -19,11 +19,12 @@ import 'package:spod_lite_server/src/generated/collections/collection_def.dart'
     as _i5;
 import 'package:spod_lite_server/src/generated/collections/collection_field.dart'
     as _i6;
+import 'dart:typed_data' as _i7;
 import 'package:spod_lite_server/src/generated/collections/record_event.dart'
-    as _i7;
-import 'package:spod_lite_server/src/generated/greetings/greeting.dart' as _i8;
-import 'package:spod_lite_server/src/generated/posts/post.dart' as _i9;
-import 'package:spod_lite_server/src/generated/users/app_user.dart' as _i10;
+    as _i8;
+import 'package:spod_lite_server/src/generated/greetings/greeting.dart' as _i9;
+import 'package:spod_lite_server/src/generated/posts/post.dart' as _i10;
+import 'package:spod_lite_server/src/generated/users/app_user.dart' as _i11;
 import 'package:spod_lite_server/src/generated/protocol.dart';
 import 'package:spod_lite_server/src/generated/endpoints.dart';
 export 'package:serverpod_test/serverpod_test_public_exports.dart';
@@ -142,6 +143,8 @@ class TestEndpoints {
 
   late final _CollectionsEndpoint collections;
 
+  late final _FilesEndpoint files;
+
   late final _RecordsEndpoint records;
 
   late final _GreetingEndpoint greeting;
@@ -163,6 +166,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     collections = _CollectionsEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    files = _FilesEndpoint(
       endpoints,
       serializationManager,
     );
@@ -564,6 +571,95 @@ class _CollectionsEndpoint {
   }
 }
 
+class _FilesEndpoint {
+  _FilesEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _i2.EndpointDispatch _endpointDispatch;
+
+  final _i2.SerializationManager _serializationManager;
+
+  _i3.Future<String> upload(
+    _i1.TestSessionBuilder sessionBuilder,
+    String collectionName,
+    int recordId,
+    String fieldName,
+    _i7.ByteData bytes,
+    String filename,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'files',
+            method: 'upload',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'files',
+          methodName: 'upload',
+          parameters: _i1.testObjectToJson({
+            'collectionName': collectionName,
+            'recordId': recordId,
+            'fieldName': fieldName,
+            'bytes': bytes,
+            'filename': filename,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<void> delete(
+    _i1.TestSessionBuilder sessionBuilder,
+    String collectionName,
+    int recordId,
+    String fieldName,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'files',
+            method: 'delete',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'files',
+          methodName: 'delete',
+          parameters: _i1.testObjectToJson({
+            'collectionName': collectionName,
+            'recordId': recordId,
+            'fieldName': fieldName,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<void>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _RecordsEndpoint {
   _RecordsEndpoint(
     this._endpointDispatch,
@@ -784,11 +880,11 @@ class _RecordsEndpoint {
     });
   }
 
-  _i3.Stream<_i7.RecordEvent> watch(
+  _i3.Stream<_i8.RecordEvent> watch(
     _i1.TestSessionBuilder sessionBuilder,
     String collectionName,
   ) {
-    var _localTestStreamManager = _i1.TestStreamManager<_i7.RecordEvent>();
+    var _localTestStreamManager = _i1.TestStreamManager<_i8.RecordEvent>();
     _i1.callStreamFunctionAndHandleExceptions(
       () async {
         var _localUniqueSession =
@@ -827,7 +923,7 @@ class _GreetingEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i8.Greeting> hello(
+  _i3.Future<_i9.Greeting> hello(
     _i1.TestSessionBuilder sessionBuilder,
     String name,
   ) async {
@@ -850,7 +946,7 @@ class _GreetingEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i8.Greeting>);
+                as _i3.Future<_i9.Greeting>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -869,7 +965,7 @@ class _PostsEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<List<_i9.Post>> listPosts(
+  _i3.Future<List<_i10.Post>> listPosts(
     _i1.TestSessionBuilder sessionBuilder,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
@@ -891,7 +987,7 @@ class _PostsEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i9.Post>>);
+                as _i3.Future<List<_i10.Post>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -899,7 +995,7 @@ class _PostsEndpoint {
     });
   }
 
-  _i3.Future<_i9.Post> createPost(
+  _i3.Future<_i10.Post> createPost(
     _i1.TestSessionBuilder sessionBuilder,
     String title,
     String body,
@@ -926,7 +1022,7 @@ class _PostsEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i9.Post>);
+                as _i3.Future<_i10.Post>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -965,8 +1061,8 @@ class _PostsEndpoint {
     });
   }
 
-  _i3.Stream<_i9.Post> watchPosts(_i1.TestSessionBuilder sessionBuilder) {
-    var _localTestStreamManager = _i1.TestStreamManager<_i9.Post>();
+  _i3.Stream<_i10.Post> watchPosts(_i1.TestSessionBuilder sessionBuilder) {
+    var _localTestStreamManager = _i1.TestStreamManager<_i10.Post>();
     _i1.callStreamFunctionAndHandleExceptions(
       () async {
         var _localUniqueSession =
@@ -1075,7 +1171,7 @@ class _UserAuthEndpoint {
     });
   }
 
-  _i3.Future<_i10.AppUser?> me(
+  _i3.Future<_i11.AppUser?> me(
     _i1.TestSessionBuilder sessionBuilder,
     String token,
   ) async {
@@ -1098,7 +1194,7 @@ class _UserAuthEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i10.AppUser?>);
+                as _i3.Future<_i11.AppUser?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

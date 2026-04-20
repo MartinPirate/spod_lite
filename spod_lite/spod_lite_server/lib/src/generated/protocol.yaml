@@ -11,6 +11,9 @@ collections:
   - create:
   - delete:
   - updateRules:
+files:
+  - upload:
+  - delete:
 records:
   - list:
   - count:
