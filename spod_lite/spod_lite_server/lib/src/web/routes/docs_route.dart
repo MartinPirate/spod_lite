@@ -226,6 +226,13 @@ $body
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/dart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/yaml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/sql.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -273,11 +280,14 @@ $body
         @apply font-mono text-[12.5px] bg-ink-800/80 border border-ink-600/50 text-sky-300 rounded px-1.5 py-[1px];
       }
       .prose-invert pre {
-        @apply bg-ink-900 border border-ink-600/60 rounded-xl p-5 overflow-x-auto text-[13px] leading-[1.7] mb-6;
+        @apply border border-ink-600/60 rounded-xl overflow-hidden text-[13px] leading-[1.7] mb-6 p-0;
       }
-      .prose-invert pre code {
-        @apply bg-transparent border-0 text-slate-200 p-0;
+      .prose-invert pre code,
+      .prose-invert pre code.hljs {
+        @apply bg-ink-900 border-0 text-slate-200 block p-5 font-mono;
       }
+      /* Override highlight.js default bg to match our surface. */
+      .hljs { background: #0B0F14 !important; }
       .prose-invert table {
         @apply w-full text-[13.5px] mb-6 border border-ink-600/60 rounded-lg overflow-hidden;
       }
@@ -314,6 +324,17 @@ $body
       <a href="/" class="hover:text-sky-400">← Back to landing</a>
     </footer>
   </div>
+  <script>
+    // Run after Tailwind + fonts settle so the highlighted nodes get the
+    // right box once hljs swaps in its tokens.
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.hljs) {
+        document.querySelectorAll('pre code').forEach(function (el) {
+          window.hljs.highlightElement(el);
+        });
+      }
+    });
+  </script>
 </body>
 </html>
 ''';
