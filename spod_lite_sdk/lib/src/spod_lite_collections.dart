@@ -214,6 +214,47 @@ class SpodLiteCollections {
       CollectionRef._(_recordsEndpoint, name);
 }
 
+/// Kinds of realtime change a collection emits.
+enum RecordChangeType { created, updated, deleted }
+
+/// A realtime change delivered by [CollectionRef.watch].
+class RecordChange {
+  final RecordChangeType type;
+  final String collectionName;
+  final int recordId;
+
+  /// The full record for created/updated events. `null` for deletes.
+  final Map<String, dynamic>? record;
+  final DateTime at;
+
+  const RecordChange({
+    required this.type,
+    required this.collectionName,
+    required this.recordId,
+    required this.record,
+    required this.at,
+  });
+
+  factory RecordChange.fromRaw(dynamic raw) {
+    final t = raw.type as String;
+    final recordJson = raw.recordJson as String?;
+    return RecordChange(
+      type: switch (t) {
+        'created' => RecordChangeType.created,
+        'updated' => RecordChangeType.updated,
+        'deleted' => RecordChangeType.deleted,
+        _ => RecordChangeType.updated,
+      },
+      collectionName: raw.collectionName as String,
+      recordId: raw.recordId as int,
+      record: recordJson == null
+          ? null
+          : jsonDecode(recordJson) as Map<String, dynamic>,
+      at: raw.at as DateTime,
+    );
+  }
+}
+
 /// Scoped record-level API for one collection.
 class CollectionRef {
   final dynamic _records;
@@ -255,5 +296,13 @@ class CollectionRef {
 
   Future<void> delete(int id) async {
     await _records.delete(name, id);
+  }
+
+  /// Subscribe to realtime changes — created, updated, deleted — on this
+  /// collection. The stream stays open until the caller cancels it, and
+  /// respects the collection's `list` rule.
+  Stream<RecordChange> watch() {
+    final raw = _records.watch(name) as Stream;
+    return raw.map((e) => RecordChange.fromRaw(e));
   }
 }
