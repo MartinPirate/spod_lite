@@ -1,0 +1,11 @@
+name: _
+publish_to: none
+
+environment:
+  sdk: '^3.8.0'
+
+workspace:
+  - spod_lite_client
+  - spod_lite_server
+  - spod_lite_flutter
+

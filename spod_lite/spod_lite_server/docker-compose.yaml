@@ -1,0 +1,44 @@
+services:
+  # Development services
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "8090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: spod_lite
+      POSTGRES_PASSWORD: "RbVAPI-JolrXkoTNRkSM8UBAbdZOQpct"
+    volumes:
+      - spod_lite_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6.2.6
+    ports:
+      - "8091:6379"
+    command: redis-server --requirepass "AKtRSar-JBLoa6J9N9C8ztQqeA64dYHP"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+  # Test services
+  postgres_test:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "9090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: spod_lite_test
+      POSTGRES_PASSWORD: "xWm657Q2WwtumBKtgr8X37X4Ux9a97QR"
+    volumes:
+      - spod_lite_test_data:/var/lib/postgresql/data
+
+  redis_test:
+    image: redis:6.2.6
+    ports:
+      - "9091:6379"
+    command: redis-server --requirepass "2Miq3y2TU83pFIMEcm4PmekU_3mqryWv"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+volumes:
+  spod_lite_data:
+  spod_lite_test_data:
