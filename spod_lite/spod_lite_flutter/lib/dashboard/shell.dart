@@ -142,6 +142,15 @@ class _DashboardShellState extends State<DashboardShell> {
             setState(() => _selected = null);
             await _loadCollections();
           },
+          onRulesChanged: (updated) {
+            setState(() {
+              _selected = updated;
+              _collections = [
+                for (final c in _collections)
+                  if (c.id == updated.id) updated else c
+              ];
+            });
+          },
         );
       case NavSection.logs:
         return const PlaceholderScreen(

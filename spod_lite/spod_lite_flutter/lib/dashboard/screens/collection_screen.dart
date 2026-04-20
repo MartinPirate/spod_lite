@@ -7,15 +7,18 @@ import 'package:spod_lite_client/spod_lite_client.dart';
 import '../../glass.dart';
 import '../../main.dart' show client;
 import '../record_form_dialog.dart';
+import '../rules_dialog.dart';
 
 class CollectionScreen extends StatefulWidget {
   final CollectionDef def;
   final VoidCallback onDeleted;
+  final ValueChanged<CollectionDef>? onRulesChanged;
 
   const CollectionScreen({
     super.key,
     required this.def,
     required this.onDeleted,
+    this.onRulesChanged,
   });
 
   @override
@@ -89,6 +92,28 @@ class _CollectionScreenState extends State<CollectionScreen> {
     } catch (e) {
       if (!mounted) return;
       _snack('Delete failed: $e');
+    }
+  }
+
+  Future<void> _openRules() async {
+    final updated = await showGeneralDialog<CollectionDef>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Rules',
+      barrierColor: Colors.black.withValues(alpha: 0.55),
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (_, _, _) => RulesDialog(def: widget.def),
+      transitionBuilder: (_, anim, _, child) => FadeTransition(
+        opacity: anim,
+        child: ScaleTransition(
+          scale: Tween(begin: 0.94, end: 1.0).animate(
+              CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+      ),
+    );
+    if (updated != null && widget.onRulesChanged != null) {
+      widget.onRulesChanged!(updated);
     }
   }
 
@@ -207,6 +232,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
               def: widget.def,
               onRefresh: _refresh,
               onDropCollection: _deleteCollection,
+              onOpenRules: _openRules,
               recordCount: snap.data?.records.length,
             ),
             Expanded(
@@ -286,12 +312,14 @@ class _Header extends StatelessWidget {
   final CollectionDef def;
   final VoidCallback onRefresh;
   final VoidCallback onDropCollection;
+  final VoidCallback onOpenRules;
   final int? recordCount;
 
   const _Header({
     required this.def,
     required this.onRefresh,
     required this.onDropCollection,
+    required this.onOpenRules,
     required this.recordCount,
   });
 
@@ -322,6 +350,14 @@ class _Header extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 11.5, color: Glass.textSubtle)),
             const Spacer(),
+            _RuleBadges(def: def, onTap: onOpenRules),
+            const SizedBox(width: 6),
+            IconButton(
+              icon: const Icon(Icons.shield_outlined, size: 16),
+              color: Glass.textMuted,
+              tooltip: 'Rules',
+              onPressed: onOpenRules,
+            ),
             IconButton(
               icon: const Icon(Icons.refresh, size: 16),
               color: Glass.textMuted,
@@ -335,6 +371,82 @@ class _Header extends StatelessWidget {
               onPressed: onDropCollection,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RuleBadges extends StatelessWidget {
+  final CollectionDef def;
+  final VoidCallback onTap;
+  const _RuleBadges({required this.def, required this.onTap});
+
+  String _short(String mode) {
+    switch (mode) {
+      case 'public':
+        return 'pub';
+      case 'authed':
+        return 'auth';
+      case 'admin':
+        return 'adm';
+    }
+    return mode;
+  }
+
+  Color _color(String mode) {
+    switch (mode) {
+      case 'public':
+        return Glass.auroraD;
+      case 'authed':
+        return Glass.auroraA;
+      case 'admin':
+        return Glass.auroraB;
+    }
+    return Glass.textSubtle;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = [
+      ('list', def.listRule),
+      ('view', def.viewRule),
+      ('create', def.createRule),
+      ('update', def.updateRule),
+      ('delete', def.deleteRule),
+    ];
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Tooltip(
+        message:
+            'list ${def.listRule} · view ${def.viewRule} · create ${def.createRule} · update ${def.updateRule} · delete ${def.deleteRule}',
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final e in entries) ...[
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _color(e.$2).withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                        color: _color(e.$2).withValues(alpha: 0.35)),
+                  ),
+                  child: Text(_short(e.$2),
+                      style: TextStyle(
+                          fontSize: 9.5,
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.w700,
+                          color: _color(e.$2))),
+                ),
+                const SizedBox(width: 3),
+              ],
+            ],
+          ),
         ),
       ),
     );
