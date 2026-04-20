@@ -62,27 +62,36 @@ class CollectionsEndpoint extends Endpoint {
     for (final s in specs) {
       assertValidIdentifier(s.name, kind: 'field name');
       if (!isKnownFieldType(s.fieldType)) {
-        throw InvalidIdentifierException(
-            'Unknown field type "${s.fieldType}". Allowed: ${knownFieldTypes.join(", ")}.');
+        throw SpodLiteException(
+          message:
+              'Unknown field type "${s.fieldType}". Allowed: ${knownFieldTypes.join(", ")}.',
+          code: SpodLiteErrorCode.invalidInput,
+        );
       }
     }
     if (specs.isEmpty) {
-      throw InvalidIdentifierException(
-          'A collection must have at least one field.');
+      throw SpodLiteException(
+        message: 'A collection must have at least one field.',
+        code: SpodLiteErrorCode.invalidInput,
+      );
     }
     // Guard against duplicate field names inside a single request.
     final seen = <String>{};
     for (final s in specs) {
       if (!seen.add(s.name)) {
-        throw InvalidIdentifierException(
-            'Duplicate field name "${s.name}" in request.');
+        throw SpodLiteException(
+          message: 'Duplicate field name "${s.name}" in request.',
+          code: SpodLiteErrorCode.invalidInput,
+        );
       }
     }
     // Reject clash with the built-in columns we always add.
     for (final s in specs) {
       if (s.name == 'id' || s.name == 'created_at') {
-        throw InvalidIdentifierException(
-            '"${s.name}" is a reserved built-in column.');
+        throw SpodLiteException(
+          message: '"${s.name}" is a reserved built-in column.',
+          code: SpodLiteErrorCode.invalidInput,
+        );
       }
     }
 
@@ -91,8 +100,10 @@ class CollectionsEndpoint extends Endpoint {
       where: (c) => c.name.equals(name),
     );
     if (existing != null) {
-      throw InvalidIdentifierException(
-          'Collection "$name" already exists.');
+      throw SpodLiteException(
+        message: 'Collection "$name" already exists.',
+        code: SpodLiteErrorCode.conflict,
+      );
     }
 
     return session.db.transaction<CollectionDef>((tx) async {
@@ -191,8 +202,10 @@ class CollectionsEndpoint extends Endpoint {
       where: (c) => c.name.equals(name),
     );
     if (def == null) {
-      throw InvalidIdentifierException(
-          'Collection "$name" does not exist.');
+      throw SpodLiteException(
+        message: 'Collection "$name" does not exist.',
+        code: SpodLiteErrorCode.notFound,
+      );
     }
 
     final updated = def.copyWith(
@@ -208,8 +221,10 @@ class CollectionsEndpoint extends Endpoint {
   Map<String, String> _decodeRules(String json) {
     final decoded = jsonDecode(json);
     if (decoded is! Map) {
-      throw InvalidIdentifierException(
-          'Rules must be a JSON object.');
+      throw SpodLiteException(
+        message: 'Rules must be a JSON object.',
+        code: SpodLiteErrorCode.invalidInput,
+      );
     }
     const allowedKeys = {
       'listRule', 'viewRule', 'createRule', 'updateRule', 'deleteRule'
@@ -220,8 +235,11 @@ class CollectionsEndpoint extends Endpoint {
       if (!allowedKeys.contains(key)) continue;
       final value = entry.value.toString();
       if (!ruleModes.contains(value)) {
-        throw InvalidIdentifierException(
-            'Rule value "$value" is invalid. Allowed: ${ruleModes.join(", ")}.');
+        throw SpodLiteException(
+          message:
+              'Rule value "$value" is invalid. Allowed: ${ruleModes.join(", ")}.',
+          code: SpodLiteErrorCode.invalidInput,
+        );
       }
       result[key] = value;
     }
@@ -231,13 +249,17 @@ class CollectionsEndpoint extends Endpoint {
   List<_FieldSpec> _decodeSpecs(String json) {
     final decoded = jsonDecode(json);
     if (decoded is! List) {
-      throw InvalidIdentifierException(
-          'Field specs must be a JSON array.');
+      throw SpodLiteException(
+        message: 'Field specs must be a JSON array.',
+        code: SpodLiteErrorCode.invalidInput,
+      );
     }
     return decoded.map((item) {
       if (item is! Map) {
-        throw InvalidIdentifierException(
-            'Each field spec must be a JSON object.');
+        throw SpodLiteException(
+          message: 'Each field spec must be a JSON object.',
+          code: SpodLiteErrorCode.invalidInput,
+        );
       }
       return _FieldSpec(
         name: (item['name'] ?? '').toString(),

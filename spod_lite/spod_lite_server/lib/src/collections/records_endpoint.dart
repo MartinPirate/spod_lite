@@ -89,7 +89,7 @@ class RecordsEndpoint extends Endpoint {
 
     for (final f in fields) {
       if (f.required && (!data.containsKey(f.name) || data[f.name] == null)) {
-        throw _ValidationException('Missing required field "${f.name}".');
+        throw SpodLiteException(message: 'Missing required field "${f.name}".', code: SpodLiteErrorCode.invalidInput);
       }
     }
 
@@ -104,7 +104,7 @@ class RecordsEndpoint extends Endpoint {
       params[entry.key] = _coerce(entry.value, field.fieldType);
     }
     if (cols.isEmpty) {
-      throw _ValidationException('No matching fields provided.');
+      throw SpodLiteException(message: 'No matching fields provided.', code: SpodLiteErrorCode.invalidInput);
     }
 
     final table = quoteIdent(tableNameFor(collectionName));
@@ -145,7 +145,7 @@ class RecordsEndpoint extends Endpoint {
       params[entry.key] = _coerce(entry.value, field.fieldType);
     }
     if (setters.isEmpty) {
-      throw _ValidationException('No matching fields provided.');
+      throw SpodLiteException(message: 'No matching fields provided.', code: SpodLiteErrorCode.invalidInput);
     }
 
     final table = quoteIdent(tableNameFor(collectionName));
@@ -155,8 +155,8 @@ class RecordsEndpoint extends Endpoint {
       parameters: QueryParameters.named(params),
     );
     if (result.isEmpty) {
-      throw _NotFoundException(
-          'Record $id not found in "$collectionName".');
+      throw SpodLiteException(message: 
+          'Record $id not found in "$collectionName".', code: SpodLiteErrorCode.notFound);
     }
     final row = _normalize(result.first.toColumnMap());
     final json = jsonEncode(row);
@@ -222,7 +222,7 @@ class RecordsEndpoint extends Endpoint {
       where: (c) => c.name.equals(name),
     );
     if (def == null) {
-      throw _NotFoundException('Collection "$name" does not exist.');
+      throw SpodLiteException(message: 'Collection "$name" does not exist.', code: SpodLiteErrorCode.notFound);
     }
     return def;
   }
@@ -231,11 +231,11 @@ class RecordsEndpoint extends Endpoint {
     try {
       final decoded = jsonDecode(s);
       if (decoded is! Map) {
-        throw _ValidationException('Payload must be a JSON object.');
+        throw SpodLiteException(message: 'Payload must be a JSON object.', code: SpodLiteErrorCode.invalidInput);
       }
       return Map<String, dynamic>.from(decoded);
     } on FormatException catch (e) {
-      throw _ValidationException('Invalid JSON: ${e.message}');
+      throw SpodLiteException(message: 'Invalid JSON: ${e.message}', code: SpodLiteErrorCode.invalidInput);
     }
   }
 
@@ -265,16 +265,3 @@ class RecordsEndpoint extends Endpoint {
   }
 }
 
-class _ValidationException implements Exception {
-  final String message;
-  _ValidationException(this.message);
-  @override
-  String toString() => message;
-}
-
-class _NotFoundException implements Exception {
-  final String message;
-  _NotFoundException(this.message);
-  @override
-  String toString() => message;
-}

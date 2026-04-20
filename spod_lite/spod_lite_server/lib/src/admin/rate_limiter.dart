@@ -1,5 +1,7 @@
 import 'dart:collection';
 
+import '../generated/protocol.dart';
+
 /// In-memory sliding-window rate limiter for admin sign-in attempts.
 ///
 /// Serverpod Lite runs on a single node by design, so process-local state
@@ -13,8 +15,8 @@ class SignInRateLimiter {
   static final LinkedHashMap<String, List<DateTime>> _failures =
       LinkedHashMap<String, List<DateTime>>();
 
-  /// Throws if [email] has hit the failure cap within the rolling window.
-  /// Call before attempting to verify credentials.
+  /// Throws a [SpodLiteException] with code `rateLimited` if [email] has
+  /// hit the failure cap within the rolling window.
   static void check(String email) {
     final now = DateTime.now().toUtc();
     final cutoff = now.subtract(const Duration(seconds: _windowSeconds));
@@ -29,8 +31,11 @@ class SignInRateLimiter {
       final retryAt = hits.first.add(const Duration(seconds: _windowSeconds));
       final secs = retryAt.difference(now).inSeconds;
       final mins = (secs / 60).ceil();
-      throw TooManyAttemptsException(
-          'Too many sign-in attempts. Try again in $mins minute${mins == 1 ? "" : "s"}.');
+      throw SpodLiteException(
+        message:
+            'Too many sign-in attempts. Try again in $mins minute${mins == 1 ? "" : "s"}.',
+        code: SpodLiteErrorCode.rateLimited,
+      );
     }
   }
 
@@ -43,14 +48,5 @@ class SignInRateLimiter {
     }
   }
 
-  static void recordSuccess(String email) {
-    _failures.remove(email);
-  }
-}
-
-class TooManyAttemptsException implements Exception {
-  final String message;
-  TooManyAttemptsException(this.message);
-  @override
-  String toString() => message;
+  static void recordSuccess(String email) => _failures.remove(email);
 }

@@ -1,4 +1,5 @@
 import 'package:serverpod/serverpod.dart';
+import '../generated/protocol.dart';
 
 /// The three rule modes every collection op carries.
 ///
@@ -10,7 +11,7 @@ const ruleModes = {'public', 'authed', 'admin'};
 /// Scope granted to signed-in app end-users (distinct from `admin`).
 const userScope = Scope('user');
 
-/// Throws [RuleDeniedException] when the current [session] doesn't satisfy
+/// Throws [SpodLiteException] when the current [session] doesn't satisfy
 /// [rule]. Call this at the top of every governed endpoint method.
 Future<void> enforceRule(
   Session session,
@@ -19,10 +20,11 @@ Future<void> enforceRule(
 }) async {
   if (rule == 'public') return;
 
-  final auth = await session.authenticated;
+  final auth = session.authenticated;
   if (auth == null) {
-    throw RuleDeniedException(
-      'Sign-in required to $operation on this collection.',
+    throw SpodLiteException(
+      message: 'Sign-in required to $operation on this collection.',
+      code: SpodLiteErrorCode.unauthorized,
     );
   }
 
@@ -30,22 +32,18 @@ Future<void> enforceRule(
 
   if (rule == 'admin') {
     if (!auth.scopes.any((s) => s.name == 'admin')) {
-      throw RuleDeniedException(
-        'Admin access required to $operation on this collection.',
+      throw SpodLiteException(
+        message:
+            'Admin access required to $operation on this collection.',
+        code: SpodLiteErrorCode.forbidden,
       );
     }
     return;
   }
 
   // Unknown rule string — fail closed rather than silently allowing.
-  throw RuleDeniedException(
-    'Collection rule is misconfigured: "$rule".',
+  throw SpodLiteException(
+    message: 'Collection rule is misconfigured: "$rule".',
+    code: SpodLiteErrorCode.forbidden,
   );
-}
-
-class RuleDeniedException implements Exception {
-  final String message;
-  RuleDeniedException(this.message);
-  @override
-  String toString() => message;
 }

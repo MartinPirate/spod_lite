@@ -10,12 +10,13 @@
 /// by the validator before any SQL is built.
 library;
 
+import '../generated/protocol.dart';
+
 final RegExp _identRegExp = RegExp(r'^[a-z][a-z0-9_]{0,62}$');
 
 /// Reserved Postgres keywords we refuse as identifiers, plus names that
 /// would collide with the built-in tables Serverpod Lite manages.
 const Set<String> _reserved = {
-  // Postgres reserved (partial but sufficient for common attacks)
   'all', 'analyse', 'analyze', 'and', 'any', 'array', 'as', 'asc',
   'asymmetric', 'authorization', 'binary', 'both', 'case', 'cast', 'check',
   'collate', 'collation', 'column', 'concurrently', 'constraint', 'create',
@@ -31,29 +32,28 @@ const Set<String> _reserved = {
   'select', 'session_user', 'similar', 'some', 'symmetric', 'table',
   'tablesample', 'then', 'to', 'trailing', 'true', 'union', 'unique',
   'user', 'using', 'variadic', 'verbose', 'when', 'where', 'window', 'with',
-  // Built-ins we manage
-  'admin_user', 'admin_session', 'collection_def', 'collection_field',
-  'post', 'greeting', 'id', 'created_at', 'updated_at',
+  'admin_user', 'admin_session', 'app_user', 'app_session',
+  'collection_def', 'collection_field', 'post', 'greeting',
+  'id', 'created_at', 'updated_at',
 };
 
 /// Returns true if [name] is safe to use as a Postgres identifier.
-///
-/// Requirements: starts with a lowercase letter, then lowercase
-/// alphanumerics or underscores, max 63 chars, not a reserved word.
 bool isValidIdentifier(String name) {
   if (!_identRegExp.hasMatch(name)) return false;
   if (_reserved.contains(name)) return false;
   return true;
 }
 
-/// Throws [InvalidIdentifierException] if [name] is not safe. Use this
-/// before building any SQL that includes the name.
+/// Throws [SpodLiteException] with code `invalidInput` if [name] is not
+/// safe. Use this before building any SQL that includes the name.
 void assertValidIdentifier(String name, {String kind = 'identifier'}) {
   if (!isValidIdentifier(name)) {
-    throw InvalidIdentifierException(
-        'Invalid $kind: "$name". Must be lowercase, '
-        'alphanumeric/underscore, start with a letter, 1–63 chars, '
-        'and not a reserved word.');
+    throw SpodLiteException(
+      message: 'Invalid $kind: "$name". Must be lowercase, '
+          'alphanumeric/underscore, start with a letter, 1–63 chars, '
+          'and not a reserved word.',
+      code: SpodLiteErrorCode.invalidInput,
+    );
   }
 }
 
@@ -62,16 +62,7 @@ void assertValidIdentifier(String name, {String kind = 'identifier'}) {
 /// the name via [assertValidIdentifier] — this function trusts its input.
 String quoteIdent(String name) => '"$name"';
 
-/// Prefix for user-defined collection tables. Keeps them in a clearly
-/// separate namespace from Serverpod Lite's built-in tables.
 const collectionTablePrefix = 'collection_';
 
 String tableNameFor(String collectionName) =>
     '$collectionTablePrefix$collectionName';
-
-class InvalidIdentifierException implements Exception {
-  final String message;
-  InvalidIdentifierException(this.message);
-  @override
-  String toString() => message;
-}

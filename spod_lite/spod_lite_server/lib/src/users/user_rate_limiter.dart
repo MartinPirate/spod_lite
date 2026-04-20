@@ -1,5 +1,7 @@
 import 'dart:collection';
 
+import '../generated/protocol.dart';
+
 /// Sliding-window rate limiter for end-user sign-in attempts.
 /// Shape-identical to the admin limiter but scoped separately so an
 /// attacker brute-forcing one audience doesn't lock out the other.
@@ -25,8 +27,11 @@ class UserSignInRateLimiter {
       final retryAt = hits.first.add(const Duration(seconds: _windowSeconds));
       final secs = retryAt.difference(now).inSeconds;
       final mins = (secs / 60).ceil();
-      throw UserTooManyAttemptsException(
-          'Too many sign-in attempts. Try again in $mins minute${mins == 1 ? "" : "s"}.');
+      throw SpodLiteException(
+        message:
+            'Too many sign-in attempts. Try again in $mins minute${mins == 1 ? "" : "s"}.',
+        code: SpodLiteErrorCode.rateLimited,
+      );
     }
   }
 
@@ -40,11 +45,4 @@ class UserSignInRateLimiter {
   }
 
   static void recordSuccess(String email) => _failures.remove(email);
-}
-
-class UserTooManyAttemptsException implements Exception {
-  final String message;
-  UserTooManyAttemptsException(this.message);
-  @override
-  String toString() => message;
 }

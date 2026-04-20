@@ -28,11 +28,17 @@ class FilesEndpoint extends Endpoint {
     assertValidIdentifier(fieldName, kind: 'field name');
 
     if (bytes.lengthInBytes == 0) {
-      throw _FileException('Upload is empty.');
+      throw SpodLiteException(
+        message: 'Upload is empty.',
+        code: SpodLiteErrorCode.invalidInput,
+      );
     }
     if (bytes.lengthInBytes > maxUploadBytes) {
-      throw _FileException(
-          'File is larger than ${(maxUploadBytes / (1024 * 1024)).round()} MB.');
+      throw SpodLiteException(
+        message:
+            'File is larger than ${(maxUploadBytes / (1024 * 1024)).round()} MB.',
+        code: SpodLiteErrorCode.invalidInput,
+      );
     }
 
     final def = await _requireCollection(session, collectionName);
@@ -40,8 +46,11 @@ class FilesEndpoint extends Endpoint {
 
     final field = await _requireField(session, def.id!, fieldName);
     if (field.fieldType != 'file') {
-      throw _FileException(
-          'Field "$fieldName" is type "${field.fieldType}", not "file".');
+      throw SpodLiteException(
+        message:
+            'Field "$fieldName" is type "${field.fieldType}", not "file".',
+        code: SpodLiteErrorCode.invalidInput,
+      );
     }
 
     final safeName = _sanitizeFilename(filename);
@@ -59,12 +68,13 @@ class FilesEndpoint extends Endpoint {
       path: storagePath,
     );
     if (publicUrl == null) {
-      throw _FileException(
-          'Storage accepted the upload but returned no public URL.');
+      throw SpodLiteException(
+        message: 'Storage accepted the upload but returned no public URL.',
+        code: SpodLiteErrorCode.invalidInput,
+      );
     }
     final urlString = publicUrl.toString();
 
-    // Update the record's field with the URL.
     final table = quoteIdent(tableNameFor(collectionName));
     await session.db.unsafeExecute(
       'update $table set ${quoteIdent(fieldName)} = @url '
@@ -93,11 +103,13 @@ class FilesEndpoint extends Endpoint {
 
     final field = await _requireField(session, def.id!, fieldName);
     if (field.fieldType != 'file') {
-      throw _FileException(
-          'Field "$fieldName" is type "${field.fieldType}", not "file".');
+      throw SpodLiteException(
+        message:
+            'Field "$fieldName" is type "${field.fieldType}", not "file".',
+        code: SpodLiteErrorCode.invalidInput,
+      );
     }
 
-    // Best-effort: delete anything at that path prefix, clear the column.
     final prefix =
         'collections/$collectionName/$recordId/$fieldName/';
     final exists = await session.storage.fileExists(
@@ -123,7 +135,10 @@ class FilesEndpoint extends Endpoint {
       where: (c) => c.name.equals(name),
     );
     if (def == null) {
-      throw _FileException('Collection "$name" does not exist.');
+      throw SpodLiteException(
+        message: 'Collection "$name" does not exist.',
+        code: SpodLiteErrorCode.notFound,
+      );
     }
     return def;
   }
@@ -136,13 +151,15 @@ class FilesEndpoint extends Endpoint {
           f.collectionDefId.equals(collectionDefId) & f.name.equals(name),
     );
     if (field == null) {
-      throw _FileException('Field "$name" does not exist on this collection.');
+      throw SpodLiteException(
+        message: 'Field "$name" does not exist on this collection.',
+        code: SpodLiteErrorCode.notFound,
+      );
     }
     return field;
   }
 
   /// Strip anything funky from a filename before it becomes part of a path.
-  /// Keeps letters, digits, dashes, underscores, and the extension dot.
   String _sanitizeFilename(String raw) {
     final trimmed = raw.trim();
     if (trimmed.isEmpty) return 'upload.bin';
@@ -153,11 +170,4 @@ class FilesEndpoint extends Endpoint {
     }
     return cleaned.length > 128 ? cleaned.substring(0, 128) : cleaned;
   }
-}
-
-class _FileException implements Exception {
-  final String message;
-  _FileException(this.message);
-  @override
-  String toString() => message;
 }

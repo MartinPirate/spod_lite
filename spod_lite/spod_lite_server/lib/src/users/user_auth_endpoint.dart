@@ -28,7 +28,10 @@ class UserAuthEndpoint extends Endpoint {
       where: (u) => u.email.equals(normalized),
     );
     if (existing != null) {
-      throw _AuthException('An account with that email already exists.');
+      throw SpodLiteException(
+        message: 'An account with that email already exists.',
+        code: SpodLiteErrorCode.conflict,
+      );
     }
 
     final hash = BCrypt.hashpw(password, BCrypt.gensalt(logRounds: 12));
@@ -55,7 +58,10 @@ class UserAuthEndpoint extends Endpoint {
       UserSignInRateLimiter.recordFailure(normalized);
       session.log('[UserAuth] failed sign-in for $normalized',
           level: LogLevel.warning);
-      throw _AuthException('Invalid email or password.');
+      throw SpodLiteException(
+        message: 'Invalid email or password.',
+        code: SpodLiteErrorCode.unauthorized,
+      );
     }
     UserSignInRateLimiter.recordSuccess(normalized);
     return _issueSession(session, user.id!);
@@ -111,22 +117,24 @@ String _normalizeEmail(String email) => email.trim().toLowerCase();
 void _validateEmail(String email) {
   final re = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
   if (!re.hasMatch(email)) {
-    throw _AuthException('Invalid email address.');
+    throw SpodLiteException(
+      message: 'Invalid email address.',
+      code: SpodLiteErrorCode.invalidInput,
+    );
   }
 }
 
 void _validatePassword(String password) {
   if (password.length < 8) {
-    throw _AuthException('Password must be at least 8 characters.');
+    throw SpodLiteException(
+      message: 'Password must be at least 8 characters.',
+      code: SpodLiteErrorCode.invalidInput,
+    );
   }
   if (password.length > 256) {
-    throw _AuthException('Password is too long.');
+    throw SpodLiteException(
+      message: 'Password is too long.',
+      code: SpodLiteErrorCode.invalidInput,
+    );
   }
-}
-
-class _AuthException implements Exception {
-  final String message;
-  _AuthException(this.message);
-  @override
-  String toString() => message;
 }
