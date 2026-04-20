@@ -5,6 +5,11 @@ table: collection_def
 fields:
   name: String
   label: String
+  listRule: String, default='admin'
+  viewRule: String, default='admin'
+  createRule: String, default='admin'
+  updateRule: String, default='admin'
+  deleteRule: String, default='admin'
   createdAt: DateTime?, defaultPersist=now
 
 indexes:

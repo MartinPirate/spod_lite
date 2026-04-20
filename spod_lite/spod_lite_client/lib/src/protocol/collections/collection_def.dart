@@ -18,13 +18,27 @@ abstract class CollectionDef implements _i1.SerializableModel {
     this.id,
     required this.name,
     required this.label,
+    String? listRule,
+    String? viewRule,
+    String? createRule,
+    String? updateRule,
+    String? deleteRule,
     this.createdAt,
-  });
+  }) : listRule = listRule ?? 'admin',
+       viewRule = viewRule ?? 'admin',
+       createRule = createRule ?? 'admin',
+       updateRule = updateRule ?? 'admin',
+       deleteRule = deleteRule ?? 'admin';
 
   factory CollectionDef({
     int? id,
     required String name,
     required String label,
+    String? listRule,
+    String? viewRule,
+    String? createRule,
+    String? updateRule,
+    String? deleteRule,
     DateTime? createdAt,
   }) = _CollectionDefImpl;
 
@@ -33,6 +47,11 @@ abstract class CollectionDef implements _i1.SerializableModel {
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       label: jsonSerialization['label'] as String,
+      listRule: jsonSerialization['listRule'] as String?,
+      viewRule: jsonSerialization['viewRule'] as String?,
+      createRule: jsonSerialization['createRule'] as String?,
+      updateRule: jsonSerialization['updateRule'] as String?,
+      deleteRule: jsonSerialization['deleteRule'] as String?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -48,6 +67,16 @@ abstract class CollectionDef implements _i1.SerializableModel {
 
   String label;
 
+  String listRule;
+
+  String viewRule;
+
+  String createRule;
+
+  String updateRule;
+
+  String deleteRule;
+
   DateTime? createdAt;
 
   /// Returns a shallow copy of this [CollectionDef]
@@ -57,6 +86,11 @@ abstract class CollectionDef implements _i1.SerializableModel {
     int? id,
     String? name,
     String? label,
+    String? listRule,
+    String? viewRule,
+    String? createRule,
+    String? updateRule,
+    String? deleteRule,
     DateTime? createdAt,
   });
   @override
@@ -66,6 +100,11 @@ abstract class CollectionDef implements _i1.SerializableModel {
       if (id != null) 'id': id,
       'name': name,
       'label': label,
+      'listRule': listRule,
+      'viewRule': viewRule,
+      'createRule': createRule,
+      'updateRule': updateRule,
+      'deleteRule': deleteRule,
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
     };
   }
@@ -83,11 +122,21 @@ class _CollectionDefImpl extends CollectionDef {
     int? id,
     required String name,
     required String label,
+    String? listRule,
+    String? viewRule,
+    String? createRule,
+    String? updateRule,
+    String? deleteRule,
     DateTime? createdAt,
   }) : super._(
          id: id,
          name: name,
          label: label,
+         listRule: listRule,
+         viewRule: viewRule,
+         createRule: createRule,
+         updateRule: updateRule,
+         deleteRule: deleteRule,
          createdAt: createdAt,
        );
 
@@ -99,12 +148,22 @@ class _CollectionDefImpl extends CollectionDef {
     Object? id = _Undefined,
     String? name,
     String? label,
+    String? listRule,
+    String? viewRule,
+    String? createRule,
+    String? updateRule,
+    String? deleteRule,
     Object? createdAt = _Undefined,
   }) {
     return CollectionDef(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       label: label ?? this.label,
+      listRule: listRule ?? this.listRule,
+      viewRule: viewRule ?? this.viewRule,
+      createRule: createRule ?? this.createRule,
+      updateRule: updateRule ?? this.updateRule,
+      deleteRule: deleteRule ?? this.deleteRule,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
     );
   }

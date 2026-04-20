@@ -19,13 +19,27 @@ abstract class CollectionDef
     this.id,
     required this.name,
     required this.label,
+    String? listRule,
+    String? viewRule,
+    String? createRule,
+    String? updateRule,
+    String? deleteRule,
     this.createdAt,
-  });
+  }) : listRule = listRule ?? 'admin',
+       viewRule = viewRule ?? 'admin',
+       createRule = createRule ?? 'admin',
+       updateRule = updateRule ?? 'admin',
+       deleteRule = deleteRule ?? 'admin';
 
   factory CollectionDef({
     int? id,
     required String name,
     required String label,
+    String? listRule,
+    String? viewRule,
+    String? createRule,
+    String? updateRule,
+    String? deleteRule,
     DateTime? createdAt,
   }) = _CollectionDefImpl;
 
@@ -34,6 +48,11 @@ abstract class CollectionDef
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       label: jsonSerialization['label'] as String,
+      listRule: jsonSerialization['listRule'] as String?,
+      viewRule: jsonSerialization['viewRule'] as String?,
+      createRule: jsonSerialization['createRule'] as String?,
+      updateRule: jsonSerialization['updateRule'] as String?,
+      deleteRule: jsonSerialization['deleteRule'] as String?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -51,6 +70,16 @@ abstract class CollectionDef
 
   String label;
 
+  String listRule;
+
+  String viewRule;
+
+  String createRule;
+
+  String updateRule;
+
+  String deleteRule;
+
   DateTime? createdAt;
 
   @override
@@ -63,6 +92,11 @@ abstract class CollectionDef
     int? id,
     String? name,
     String? label,
+    String? listRule,
+    String? viewRule,
+    String? createRule,
+    String? updateRule,
+    String? deleteRule,
     DateTime? createdAt,
   });
   @override
@@ -72,6 +106,11 @@ abstract class CollectionDef
       if (id != null) 'id': id,
       'name': name,
       'label': label,
+      'listRule': listRule,
+      'viewRule': viewRule,
+      'createRule': createRule,
+      'updateRule': updateRule,
+      'deleteRule': deleteRule,
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
     };
   }
@@ -83,6 +122,11 @@ abstract class CollectionDef
       if (id != null) 'id': id,
       'name': name,
       'label': label,
+      'listRule': listRule,
+      'viewRule': viewRule,
+      'createRule': createRule,
+      'updateRule': updateRule,
+      'deleteRule': deleteRule,
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
     };
   }
@@ -124,11 +168,21 @@ class _CollectionDefImpl extends CollectionDef {
     int? id,
     required String name,
     required String label,
+    String? listRule,
+    String? viewRule,
+    String? createRule,
+    String? updateRule,
+    String? deleteRule,
     DateTime? createdAt,
   }) : super._(
          id: id,
          name: name,
          label: label,
+         listRule: listRule,
+         viewRule: viewRule,
+         createRule: createRule,
+         updateRule: updateRule,
+         deleteRule: deleteRule,
          createdAt: createdAt,
        );
 
@@ -140,12 +194,22 @@ class _CollectionDefImpl extends CollectionDef {
     Object? id = _Undefined,
     String? name,
     String? label,
+    String? listRule,
+    String? viewRule,
+    String? createRule,
+    String? updateRule,
+    String? deleteRule,
     Object? createdAt = _Undefined,
   }) {
     return CollectionDef(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       label: label ?? this.label,
+      listRule: listRule ?? this.listRule,
+      viewRule: viewRule ?? this.viewRule,
+      createRule: createRule ?? this.createRule,
+      updateRule: updateRule ?? this.updateRule,
+      deleteRule: deleteRule ?? this.deleteRule,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
     );
   }
@@ -161,6 +225,31 @@ class CollectionDefUpdateTable extends _i1.UpdateTable<CollectionDefTable> {
 
   _i1.ColumnValue<String, String> label(String value) => _i1.ColumnValue(
     table.label,
+    value,
+  );
+
+  _i1.ColumnValue<String, String> listRule(String value) => _i1.ColumnValue(
+    table.listRule,
+    value,
+  );
+
+  _i1.ColumnValue<String, String> viewRule(String value) => _i1.ColumnValue(
+    table.viewRule,
+    value,
+  );
+
+  _i1.ColumnValue<String, String> createRule(String value) => _i1.ColumnValue(
+    table.createRule,
+    value,
+  );
+
+  _i1.ColumnValue<String, String> updateRule(String value) => _i1.ColumnValue(
+    table.updateRule,
+    value,
+  );
+
+  _i1.ColumnValue<String, String> deleteRule(String value) => _i1.ColumnValue(
+    table.deleteRule,
     value,
   );
 
@@ -183,6 +272,31 @@ class CollectionDefTable extends _i1.Table<int?> {
       'label',
       this,
     );
+    listRule = _i1.ColumnString(
+      'listRule',
+      this,
+      hasDefault: true,
+    );
+    viewRule = _i1.ColumnString(
+      'viewRule',
+      this,
+      hasDefault: true,
+    );
+    createRule = _i1.ColumnString(
+      'createRule',
+      this,
+      hasDefault: true,
+    );
+    updateRule = _i1.ColumnString(
+      'updateRule',
+      this,
+      hasDefault: true,
+    );
+    deleteRule = _i1.ColumnString(
+      'deleteRule',
+      this,
+      hasDefault: true,
+    );
     createdAt = _i1.ColumnDateTime(
       'createdAt',
       this,
@@ -196,6 +310,16 @@ class CollectionDefTable extends _i1.Table<int?> {
 
   late final _i1.ColumnString label;
 
+  late final _i1.ColumnString listRule;
+
+  late final _i1.ColumnString viewRule;
+
+  late final _i1.ColumnString createRule;
+
+  late final _i1.ColumnString updateRule;
+
+  late final _i1.ColumnString deleteRule;
+
   late final _i1.ColumnDateTime createdAt;
 
   @override
@@ -203,6 +327,11 @@ class CollectionDefTable extends _i1.Table<int?> {
     id,
     name,
     label,
+    listRule,
+    viewRule,
+    createRule,
+    updateRule,
+    deleteRule,
     createdAt,
   ];
 }
