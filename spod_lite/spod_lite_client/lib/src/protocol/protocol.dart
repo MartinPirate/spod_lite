@@ -17,25 +17,29 @@ import 'collections/collection_def.dart' as _i4;
 import 'collections/collection_field.dart' as _i5;
 import 'collections/collection_field_spec.dart' as _i6;
 import 'collections/record_event.dart' as _i7;
-import 'greetings/greeting.dart' as _i8;
-import 'posts/post.dart' as _i9;
-import 'users/app_session.dart' as _i10;
-import 'users/app_user.dart' as _i11;
+import 'errors/spod_lite_error_code.dart' as _i8;
+import 'errors/spod_lite_exception.dart' as _i9;
+import 'greetings/greeting.dart' as _i10;
+import 'posts/post.dart' as _i11;
+import 'users/app_session.dart' as _i12;
+import 'users/app_user.dart' as _i13;
 import 'package:spod_lite_client/src/protocol/collections/collection_def.dart'
-    as _i12;
+    as _i14;
 import 'package:spod_lite_client/src/protocol/collections/collection_field.dart'
-    as _i13;
-import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i14;
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _i15;
+import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i16;
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+    as _i17;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
-    as _i16;
+    as _i18;
 export 'admin/admin_session.dart';
 export 'admin/admin_user.dart';
 export 'collections/collection_def.dart';
 export 'collections/collection_field.dart';
 export 'collections/collection_field_spec.dart';
 export 'collections/record_event.dart';
+export 'errors/spod_lite_error_code.dart';
+export 'errors/spod_lite_exception.dart';
 export 'greetings/greeting.dart';
 export 'posts/post.dart';
 export 'users/app_session.dart';
@@ -94,17 +98,23 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i7.RecordEvent) {
       return _i7.RecordEvent.fromJson(data) as T;
     }
-    if (t == _i8.Greeting) {
-      return _i8.Greeting.fromJson(data) as T;
+    if (t == _i8.SpodLiteErrorCode) {
+      return _i8.SpodLiteErrorCode.fromJson(data) as T;
     }
-    if (t == _i9.Post) {
-      return _i9.Post.fromJson(data) as T;
+    if (t == _i9.SpodLiteException) {
+      return _i9.SpodLiteException.fromJson(data) as T;
     }
-    if (t == _i10.AppSession) {
-      return _i10.AppSession.fromJson(data) as T;
+    if (t == _i10.Greeting) {
+      return _i10.Greeting.fromJson(data) as T;
     }
-    if (t == _i11.AppUser) {
-      return _i11.AppUser.fromJson(data) as T;
+    if (t == _i11.Post) {
+      return _i11.Post.fromJson(data) as T;
+    }
+    if (t == _i12.AppSession) {
+      return _i12.AppSession.fromJson(data) as T;
+    }
+    if (t == _i13.AppUser) {
+      return _i13.AppUser.fromJson(data) as T;
     }
     if (t == _i1.getType<_i2.AdminSession?>()) {
       return (data != null ? _i2.AdminSession.fromJson(data) : null) as T;
@@ -125,41 +135,47 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i7.RecordEvent?>()) {
       return (data != null ? _i7.RecordEvent.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i8.Greeting?>()) {
-      return (data != null ? _i8.Greeting.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i8.SpodLiteErrorCode?>()) {
+      return (data != null ? _i8.SpodLiteErrorCode.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i9.Post?>()) {
-      return (data != null ? _i9.Post.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i9.SpodLiteException?>()) {
+      return (data != null ? _i9.SpodLiteException.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i10.AppSession?>()) {
-      return (data != null ? _i10.AppSession.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i10.Greeting?>()) {
+      return (data != null ? _i10.Greeting.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i11.AppUser?>()) {
-      return (data != null ? _i11.AppUser.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i11.Post?>()) {
+      return (data != null ? _i11.Post.fromJson(data) : null) as T;
     }
-    if (t == List<_i12.CollectionDef>) {
+    if (t == _i1.getType<_i12.AppSession?>()) {
+      return (data != null ? _i12.AppSession.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i13.AppUser?>()) {
+      return (data != null ? _i13.AppUser.fromJson(data) : null) as T;
+    }
+    if (t == List<_i14.CollectionDef>) {
       return (data as List)
-              .map((e) => deserialize<_i12.CollectionDef>(e))
+              .map((e) => deserialize<_i14.CollectionDef>(e))
               .toList()
           as T;
     }
-    if (t == List<_i13.CollectionField>) {
+    if (t == List<_i15.CollectionField>) {
       return (data as List)
-              .map((e) => deserialize<_i13.CollectionField>(e))
+              .map((e) => deserialize<_i15.CollectionField>(e))
               .toList()
           as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i14.Post>) {
-      return (data as List).map((e) => deserialize<_i14.Post>(e)).toList() as T;
+    if (t == List<_i16.Post>) {
+      return (data as List).map((e) => deserialize<_i16.Post>(e)).toList() as T;
     }
     try {
-      return _i15.Protocol().deserialize<T>(data, t);
+      return _i17.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     try {
-      return _i16.Protocol().deserialize<T>(data, t);
+      return _i18.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -172,10 +188,12 @@ class Protocol extends _i1.SerializationManager {
       _i5.CollectionField => 'CollectionField',
       _i6.CollectionFieldSpec => 'CollectionFieldSpec',
       _i7.RecordEvent => 'RecordEvent',
-      _i8.Greeting => 'Greeting',
-      _i9.Post => 'Post',
-      _i10.AppSession => 'AppSession',
-      _i11.AppUser => 'AppUser',
+      _i8.SpodLiteErrorCode => 'SpodLiteErrorCode',
+      _i9.SpodLiteException => 'SpodLiteException',
+      _i10.Greeting => 'Greeting',
+      _i11.Post => 'Post',
+      _i12.AppSession => 'AppSession',
+      _i13.AppUser => 'AppUser',
       _ => null,
     };
   }
@@ -202,20 +220,24 @@ class Protocol extends _i1.SerializationManager {
         return 'CollectionFieldSpec';
       case _i7.RecordEvent():
         return 'RecordEvent';
-      case _i8.Greeting():
+      case _i8.SpodLiteErrorCode():
+        return 'SpodLiteErrorCode';
+      case _i9.SpodLiteException():
+        return 'SpodLiteException';
+      case _i10.Greeting():
         return 'Greeting';
-      case _i9.Post():
+      case _i11.Post():
         return 'Post';
-      case _i10.AppSession():
+      case _i12.AppSession():
         return 'AppSession';
-      case _i11.AppUser():
+      case _i13.AppUser():
         return 'AppUser';
     }
-    className = _i15.Protocol().getClassNameForObject(data);
+    className = _i17.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_idp.$className';
     }
-    className = _i16.Protocol().getClassNameForObject(data);
+    className = _i18.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_core.$className';
     }
@@ -246,25 +268,31 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'RecordEvent') {
       return deserialize<_i7.RecordEvent>(data['data']);
     }
+    if (dataClassName == 'SpodLiteErrorCode') {
+      return deserialize<_i8.SpodLiteErrorCode>(data['data']);
+    }
+    if (dataClassName == 'SpodLiteException') {
+      return deserialize<_i9.SpodLiteException>(data['data']);
+    }
     if (dataClassName == 'Greeting') {
-      return deserialize<_i8.Greeting>(data['data']);
+      return deserialize<_i10.Greeting>(data['data']);
     }
     if (dataClassName == 'Post') {
-      return deserialize<_i9.Post>(data['data']);
+      return deserialize<_i11.Post>(data['data']);
     }
     if (dataClassName == 'AppSession') {
-      return deserialize<_i10.AppSession>(data['data']);
+      return deserialize<_i12.AppSession>(data['data']);
     }
     if (dataClassName == 'AppUser') {
-      return deserialize<_i11.AppUser>(data['data']);
+      return deserialize<_i13.AppUser>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);
-      return _i15.Protocol().deserializeByClassName(data);
+      return _i17.Protocol().deserializeByClassName(data);
     }
     if (dataClassName.startsWith('serverpod_auth_core.')) {
       data['className'] = dataClassName.substring(20);
-      return _i16.Protocol().deserializeByClassName(data);
+      return _i18.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }
@@ -279,10 +307,10 @@ class Protocol extends _i1.SerializationManager {
       return null;
     }
     try {
-      return _i15.Protocol().mapRecordToJson(record);
+      return _i17.Protocol().mapRecordToJson(record);
     } catch (_) {}
     try {
-      return _i16.Protocol().mapRecordToJson(record);
+      return _i18.Protocol().mapRecordToJson(record);
     } catch (_) {}
     throw Exception('Unsupported record type ${record.runtimeType}');
   }

@@ -22,21 +22,25 @@ import 'collections/collection_def.dart' as _i7;
 import 'collections/collection_field.dart' as _i8;
 import 'collections/collection_field_spec.dart' as _i9;
 import 'collections/record_event.dart' as _i10;
-import 'greetings/greeting.dart' as _i11;
-import 'posts/post.dart' as _i12;
-import 'users/app_session.dart' as _i13;
-import 'users/app_user.dart' as _i14;
+import 'errors/spod_lite_error_code.dart' as _i11;
+import 'errors/spod_lite_exception.dart' as _i12;
+import 'greetings/greeting.dart' as _i13;
+import 'posts/post.dart' as _i14;
+import 'users/app_session.dart' as _i15;
+import 'users/app_user.dart' as _i16;
 import 'package:spod_lite_server/src/generated/collections/collection_def.dart'
-    as _i15;
+    as _i17;
 import 'package:spod_lite_server/src/generated/collections/collection_field.dart'
-    as _i16;
-import 'package:spod_lite_server/src/generated/posts/post.dart' as _i17;
+    as _i18;
+import 'package:spod_lite_server/src/generated/posts/post.dart' as _i19;
 export 'admin/admin_session.dart';
 export 'admin/admin_user.dart';
 export 'collections/collection_def.dart';
 export 'collections/collection_field.dart';
 export 'collections/collection_field_spec.dart';
 export 'collections/record_event.dart';
+export 'errors/spod_lite_error_code.dart';
+export 'errors/spod_lite_exception.dart';
 export 'greetings/greeting.dart';
 export 'posts/post.dart';
 export 'users/app_session.dart';
@@ -625,17 +629,23 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i10.RecordEvent) {
       return _i10.RecordEvent.fromJson(data) as T;
     }
-    if (t == _i11.Greeting) {
-      return _i11.Greeting.fromJson(data) as T;
+    if (t == _i11.SpodLiteErrorCode) {
+      return _i11.SpodLiteErrorCode.fromJson(data) as T;
     }
-    if (t == _i12.Post) {
-      return _i12.Post.fromJson(data) as T;
+    if (t == _i12.SpodLiteException) {
+      return _i12.SpodLiteException.fromJson(data) as T;
     }
-    if (t == _i13.AppSession) {
-      return _i13.AppSession.fromJson(data) as T;
+    if (t == _i13.Greeting) {
+      return _i13.Greeting.fromJson(data) as T;
     }
-    if (t == _i14.AppUser) {
-      return _i14.AppUser.fromJson(data) as T;
+    if (t == _i14.Post) {
+      return _i14.Post.fromJson(data) as T;
+    }
+    if (t == _i15.AppSession) {
+      return _i15.AppSession.fromJson(data) as T;
+    }
+    if (t == _i16.AppUser) {
+      return _i16.AppUser.fromJson(data) as T;
     }
     if (t == _i1.getType<_i5.AdminSession?>()) {
       return (data != null ? _i5.AdminSession.fromJson(data) : null) as T;
@@ -656,35 +666,41 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i10.RecordEvent?>()) {
       return (data != null ? _i10.RecordEvent.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i11.Greeting?>()) {
-      return (data != null ? _i11.Greeting.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i11.SpodLiteErrorCode?>()) {
+      return (data != null ? _i11.SpodLiteErrorCode.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i12.Post?>()) {
-      return (data != null ? _i12.Post.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i12.SpodLiteException?>()) {
+      return (data != null ? _i12.SpodLiteException.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i13.AppSession?>()) {
-      return (data != null ? _i13.AppSession.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i13.Greeting?>()) {
+      return (data != null ? _i13.Greeting.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i14.AppUser?>()) {
-      return (data != null ? _i14.AppUser.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i14.Post?>()) {
+      return (data != null ? _i14.Post.fromJson(data) : null) as T;
     }
-    if (t == List<_i15.CollectionDef>) {
+    if (t == _i1.getType<_i15.AppSession?>()) {
+      return (data != null ? _i15.AppSession.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i16.AppUser?>()) {
+      return (data != null ? _i16.AppUser.fromJson(data) : null) as T;
+    }
+    if (t == List<_i17.CollectionDef>) {
       return (data as List)
-              .map((e) => deserialize<_i15.CollectionDef>(e))
+              .map((e) => deserialize<_i17.CollectionDef>(e))
               .toList()
           as T;
     }
-    if (t == List<_i16.CollectionField>) {
+    if (t == List<_i18.CollectionField>) {
       return (data as List)
-              .map((e) => deserialize<_i16.CollectionField>(e))
+              .map((e) => deserialize<_i18.CollectionField>(e))
               .toList()
           as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i17.Post>) {
-      return (data as List).map((e) => deserialize<_i17.Post>(e)).toList() as T;
+    if (t == List<_i19.Post>) {
+      return (data as List).map((e) => deserialize<_i19.Post>(e)).toList() as T;
     }
     try {
       return _i3.Protocol().deserialize<T>(data, t);
@@ -706,10 +722,12 @@ class Protocol extends _i1.SerializationManagerServer {
       _i8.CollectionField => 'CollectionField',
       _i9.CollectionFieldSpec => 'CollectionFieldSpec',
       _i10.RecordEvent => 'RecordEvent',
-      _i11.Greeting => 'Greeting',
-      _i12.Post => 'Post',
-      _i13.AppSession => 'AppSession',
-      _i14.AppUser => 'AppUser',
+      _i11.SpodLiteErrorCode => 'SpodLiteErrorCode',
+      _i12.SpodLiteException => 'SpodLiteException',
+      _i13.Greeting => 'Greeting',
+      _i14.Post => 'Post',
+      _i15.AppSession => 'AppSession',
+      _i16.AppUser => 'AppUser',
       _ => null,
     };
   }
@@ -736,13 +754,17 @@ class Protocol extends _i1.SerializationManagerServer {
         return 'CollectionFieldSpec';
       case _i10.RecordEvent():
         return 'RecordEvent';
-      case _i11.Greeting():
+      case _i11.SpodLiteErrorCode():
+        return 'SpodLiteErrorCode';
+      case _i12.SpodLiteException():
+        return 'SpodLiteException';
+      case _i13.Greeting():
         return 'Greeting';
-      case _i12.Post():
+      case _i14.Post():
         return 'Post';
-      case _i13.AppSession():
+      case _i15.AppSession():
         return 'AppSession';
-      case _i14.AppUser():
+      case _i16.AppUser():
         return 'AppUser';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -784,17 +806,23 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'RecordEvent') {
       return deserialize<_i10.RecordEvent>(data['data']);
     }
+    if (dataClassName == 'SpodLiteErrorCode') {
+      return deserialize<_i11.SpodLiteErrorCode>(data['data']);
+    }
+    if (dataClassName == 'SpodLiteException') {
+      return deserialize<_i12.SpodLiteException>(data['data']);
+    }
     if (dataClassName == 'Greeting') {
-      return deserialize<_i11.Greeting>(data['data']);
+      return deserialize<_i13.Greeting>(data['data']);
     }
     if (dataClassName == 'Post') {
-      return deserialize<_i12.Post>(data['data']);
+      return deserialize<_i14.Post>(data['data']);
     }
     if (dataClassName == 'AppSession') {
-      return deserialize<_i13.AppSession>(data['data']);
+      return deserialize<_i15.AppSession>(data['data']);
     }
     if (dataClassName == 'AppUser') {
-      return deserialize<_i14.AppUser>(data['data']);
+      return deserialize<_i16.AppUser>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -840,12 +868,12 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i7.CollectionDef.t;
       case _i8.CollectionField:
         return _i8.CollectionField.t;
-      case _i12.Post:
-        return _i12.Post.t;
-      case _i13.AppSession:
-        return _i13.AppSession.t;
-      case _i14.AppUser:
-        return _i14.AppUser.t;
+      case _i14.Post:
+        return _i14.Post.t;
+      case _i15.AppSession:
+        return _i15.AppSession.t;
+      case _i16.AppUser:
+        return _i16.AppUser.t;
     }
     return null;
   }
