@@ -281,7 +281,7 @@ class _UserChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final email = spod.auth.currentUser?.email ?? '';
+    final email = spod.userAuth.currentUser?.email ?? '';
     return PopupMenuButton<String>(
       tooltip: 'Account',
       offset: const Offset(0, 46),

@@ -15,10 +15,11 @@ void main() async {
     createClient: () => Client('http://localhost:8088/')
       ..connectivityMonitor = FlutterConnectivityMonitor(),
     adminEndpoint: (c) => c.adminAuth,
+    userAuthEndpoint: (c) => c.userAuth,
     collectionsEndpoint: (c) => c.collections,
     recordsEndpoint: (c) => c.records,
   );
-  await spod.auth.restore();
+  await spod.userAuth.restore();
   runApp(const DemoApp());
 }
 
@@ -47,19 +48,19 @@ class _AuthGateState extends State<AuthGate> {
   @override
   void initState() {
     super.initState();
-    spod.auth.events.listen((_) {
+    spod.userAuth.events.listen((_) {
       if (mounted) setState(() {});
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!spod.auth.isSignedIn) {
+    if (!spod.userAuth.isSignedIn) {
       return SignInScreen(onSignedIn: () => setState(() {}));
     }
     return PostsScreen(
       onSignOut: () async {
-        await spod.auth.signOut();
+        await spod.userAuth.signOut();
         if (mounted) setState(() {});
       },
     );

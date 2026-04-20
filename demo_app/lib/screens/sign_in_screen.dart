@@ -4,9 +4,6 @@ import 'package:spod_lite_sdk/spod_lite_sdk.dart';
 import '../main.dart' show spod;
 import '../theme.dart';
 
-const _devEmail = 'admin@spodlite.dev';
-const _devPassword = 'password123';
-
 class SignInScreen extends StatefulWidget {
   final VoidCallback onSignedIn;
   const SignInScreen({super.key, required this.onSignedIn});
@@ -15,9 +12,12 @@ class SignInScreen extends StatefulWidget {
   State<SignInScreen> createState() => _SignInScreenState();
 }
 
+enum _Mode { signIn, signUp }
+
 class _SignInScreenState extends State<SignInScreen> {
-  final _email = TextEditingController(text: _devEmail);
-  final _password = TextEditingController(text: _devPassword);
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  _Mode _mode = _Mode.signUp; // default to signup for first-run magic
   bool _submitting = false;
   bool _obscure = true;
   String? _error;
@@ -36,9 +36,13 @@ class _SignInScreenState extends State<SignInScreen> {
       _error = null;
     });
     try {
-      await spod.auth.signInAsAdmin(_email.text.trim(), _password.text);
+      if (_mode == _Mode.signUp) {
+        await spod.userAuth.signUp(_email.text.trim(), _password.text);
+      } else {
+        await spod.userAuth.signIn(_email.text.trim(), _password.text);
+      }
       widget.onSignedIn();
-    } on SpodLiteAuthException catch (e) {
+    } on SpodLiteUserAuthException catch (e) {
       setState(() => _error = e.message);
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -47,6 +51,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isSignUp = _mode == _Mode.signUp;
     return Scaffold(
       body: AuroraBackground(
         child: Center(
@@ -68,18 +73,26 @@ class _SignInScreenState extends State<SignInScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _BadgePill(),
-                          const SizedBox(height: 18),
-                          const Text('Welcome back',
-                              style: TextStyle(
+                          _ModeToggle(
+                            mode: _mode,
+                            onChanged: (m) => setState(() {
+                              _mode = m;
+                              _error = null;
+                            }),
+                          ),
+                          const SizedBox(height: 22),
+                          Text(isSignUp ? 'Create your account' : 'Welcome back',
+                              style: const TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: -0.8,
                                   color: Glass.text)),
                           const SizedBox(height: 6),
-                          const Text(
-                            'Your test account is pre-filled. Tap sign in to continue.',
-                            style: TextStyle(
+                          Text(
+                            isSignUp
+                                ? 'Sign up to use the Spod Demo.'
+                                : 'Sign in with the account you created.',
+                            style: const TextStyle(
                                 color: Glass.textMuted,
                                 fontSize: 14,
                                 height: 1.5),
@@ -90,6 +103,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             label: 'EMAIL',
                             leading: Icons.alternate_email,
                             textInputAction: TextInputAction.next,
+                            hint: 'you@example.com',
                           ),
                           const SizedBox(height: 14),
                           GlassField(
@@ -99,6 +113,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             obscureText: _obscure,
                             textInputAction: TextInputAction.go,
                             onSubmitted: (_) => _submit(),
+                            hint: isSignUp ? 'At least 8 characters' : null,
                             suffix: _EyeButton(
                               obscure: _obscure,
                               onTap: () =>
@@ -122,13 +137,12 @@ class _SignInScreenState extends State<SignInScreen> {
                                           Colors.black),
                                     ),
                                   )
-                                : const Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text('Sign in'),
-                                      SizedBox(width: 8),
-                                      Icon(Icons.arrow_forward_rounded,
+                                      Text(isSignUp ? 'Create account' : 'Sign in'),
+                                      const SizedBox(width: 8),
+                                      const Icon(Icons.arrow_forward_rounded,
                                           size: 16),
                                     ],
                                   ),
@@ -188,38 +202,72 @@ class _Brand extends StatelessWidget {
   }
 }
 
-class _BadgePill extends StatelessWidget {
+class _ModeToggle extends StatelessWidget {
+  final _Mode mode;
+  final ValueChanged<_Mode> onChanged;
+  const _ModeToggle({required this.mode, required this.onChanged});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Glass.hairline),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+              child: _ModeButton(
+                  label: 'Sign up',
+                  selected: mode == _Mode.signUp,
+                  onTap: () => onChanged(_Mode.signUp))),
+          Expanded(
+              child: _ModeButton(
+                  label: 'Sign in',
+                  selected: mode == _Mode.signIn,
+                  onTap: () => onChanged(_Mode.signIn))),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModeButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _ModeButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: selected ? null : onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        height: 34,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.08),
-          border: Border.all(color: Glass.hairline),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 6, height: 6,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
+          gradient: selected
+              ? const LinearGradient(
                   colors: [Glass.auroraA, Glass.auroraB],
-                ),
-              ),
-            ),
-            const SizedBox(width: 7),
-            const Text('SIGN IN',
-                style: TextStyle(
-                    fontSize: 10.5,
-                    letterSpacing: 1.0,
-                    fontWeight: FontWeight.w700,
-                    color: Glass.text)),
-          ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          borderRadius: BorderRadius.circular(7),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.black : Glass.textMuted,
+          ),
         ),
       ),
     );
