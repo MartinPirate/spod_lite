@@ -1,0 +1,17 @@
+name: spod_lite_sdk
+description: Client SDK for Serverpod Lite — auth, token storage, and admin helpers that layer on top of any Serverpod client generated from a Serverpod Lite backend.
+version: 0.1.0
+# Remove the line below to publish to pub.dev.
+publish_to: 'none'
+
+environment:
+  sdk: '^3.8.0'
+
+dependencies:
+  serverpod_client: 3.4.7
+  shared_preferences: ^2.3.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: '>=3.0.0 <7.0.0'
