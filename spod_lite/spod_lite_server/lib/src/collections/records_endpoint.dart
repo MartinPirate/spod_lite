@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:serverpod/serverpod.dart';
-import '../admin/admin_authentication_handler.dart';
 import '../generated/protocol.dart';
 import 'identifier_safety.dart';
+import 'rule_enforcer.dart';
 
 /// Generic CRUD over user-defined collections.
 ///
@@ -15,11 +15,8 @@ import 'identifier_safety.dart';
 /// never interpolated. Identifiers go through [quoteIdent] after
 /// [assertValidIdentifier].
 class RecordsEndpoint extends Endpoint {
-  @override
-  bool get requireLogin => true;
-
-  @override
-  Set<Scope> get requiredScopes => {adminScope};
+  // Not gated at the class level — rules are per-collection per-op and we
+  // check them inside each method so `public` collections actually are.
 
   /// Returns a list of records encoded as JSON strings.
   Future<List<String>> list(
@@ -31,7 +28,8 @@ class RecordsEndpoint extends Endpoint {
     assertValidIdentifier(collectionName, kind: 'collection name');
     final cappedPage = page.clamp(1, 100000);
     final cappedPerPage = perPage.clamp(1, 200);
-    await _requireCollection(session, collectionName);
+    final def = await _requireCollection(session, collectionName);
+    await enforceRule(session, def.listRule, operation: 'list');
 
     final table = quoteIdent(tableNameFor(collectionName));
     final offset = (cappedPage - 1) * cappedPerPage;
@@ -46,7 +44,8 @@ class RecordsEndpoint extends Endpoint {
 
   Future<int> count(Session session, String collectionName) async {
     assertValidIdentifier(collectionName, kind: 'collection name');
-    await _requireCollection(session, collectionName);
+    final def = await _requireCollection(session, collectionName);
+    await enforceRule(session, def.listRule, operation: 'list');
     final table = quoteIdent(tableNameFor(collectionName));
     final result =
         await session.db.unsafeQuery('select count(*) from $table');
@@ -59,7 +58,8 @@ class RecordsEndpoint extends Endpoint {
     int id,
   ) async {
     assertValidIdentifier(collectionName, kind: 'collection name');
-    await _requireCollection(session, collectionName);
+    final def = await _requireCollection(session, collectionName);
+    await enforceRule(session, def.viewRule, operation: 'view');
 
     final table = quoteIdent(tableNameFor(collectionName));
     final result = await session.db.unsafeQuery(
@@ -78,6 +78,7 @@ class RecordsEndpoint extends Endpoint {
     assertValidIdentifier(collectionName, kind: 'collection name');
     final data = _decodeJson(dataJson);
     final def = await _requireCollection(session, collectionName);
+    await enforceRule(session, def.createRule, operation: 'create');
     final fields = await CollectionField.db.find(
       session,
       where: (f) => f.collectionDefId.equals(def.id!),
@@ -122,6 +123,7 @@ class RecordsEndpoint extends Endpoint {
     assertValidIdentifier(collectionName, kind: 'collection name');
     final data = _decodeJson(dataJson);
     final def = await _requireCollection(session, collectionName);
+    await enforceRule(session, def.updateRule, operation: 'update');
     final fields = await CollectionField.db.find(
       session,
       where: (f) => f.collectionDefId.equals(def.id!),
@@ -159,7 +161,8 @@ class RecordsEndpoint extends Endpoint {
     int id,
   ) async {
     assertValidIdentifier(collectionName, kind: 'collection name');
-    await _requireCollection(session, collectionName);
+    final def = await _requireCollection(session, collectionName);
+    await enforceRule(session, def.deleteRule, operation: 'delete');
 
     final table = quoteIdent(tableNameFor(collectionName));
     await session.db.unsafeExecute(
