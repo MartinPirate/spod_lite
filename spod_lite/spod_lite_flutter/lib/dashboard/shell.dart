@@ -6,8 +6,11 @@ import '../glass.dart';
 import '../main.dart' show client;
 import 'nav_rail.dart';
 import 'schema_editor_dialog.dart';
+import 'screens/admins_screen.dart';
 import 'screens/collection_screen.dart';
-import 'screens/placeholder_screen.dart';
+import 'screens/emails_screen.dart';
+import 'screens/logs_screen.dart';
+import 'screens/users_screen.dart';
 
 class DashboardShell extends StatefulWidget {
   final AuthState auth;
@@ -152,18 +155,14 @@ class _DashboardShellState extends State<DashboardShell> {
             });
           },
         );
+      case NavSection.admins:
+        return const AdminsScreen();
+      case NavSection.users:
+        return const UsersScreen();
       case NavSection.logs:
-        return const PlaceholderScreen(
-          icon: Icons.receipt_long_outlined,
-          title: 'Logs',
-          subtitle: 'Request logs and realtime tail — arriving in a later phase.',
-        );
-      case NavSection.settings:
-        return const PlaceholderScreen(
-          icon: Icons.settings_outlined,
-          title: 'Settings',
-          subtitle: 'Auth providers, mail, backups — arriving in a later phase.',
-        );
+        return const LogsScreen();
+      case NavSection.emails:
+        return const EmailsScreen();
     }
   }
 }

@@ -3,7 +3,7 @@ import 'package:spod_lite_client/spod_lite_client.dart';
 
 import '../glass.dart';
 
-enum NavSection { collections, logs, settings }
+enum NavSection { collections, admins, users, logs, emails }
 
 class NavRail extends StatelessWidget {
   final NavSection section;
@@ -49,16 +49,28 @@ class NavRail extends StatelessWidget {
             onTap: () => onSectionChanged(NavSection.collections),
           ),
           _Tab(
+            icon: Icons.shield_moon_outlined,
+            label: 'Admins',
+            selected: section == NavSection.admins,
+            onTap: () => onSectionChanged(NavSection.admins),
+          ),
+          _Tab(
+            icon: Icons.people_outline_rounded,
+            label: 'Users',
+            selected: section == NavSection.users,
+            onTap: () => onSectionChanged(NavSection.users),
+          ),
+          _Tab(
             icon: Icons.receipt_long_outlined,
             label: 'Logs',
             selected: section == NavSection.logs,
             onTap: () => onSectionChanged(NavSection.logs),
           ),
           _Tab(
-            icon: Icons.settings_outlined,
-            label: 'Settings',
-            selected: section == NavSection.settings,
-            onTap: () => onSectionChanged(NavSection.settings),
+            icon: Icons.mail_outline_rounded,
+            label: 'Emails',
+            selected: section == NavSection.emails,
+            onTap: () => onSectionChanged(NavSection.emails),
           ),
           const Divider(height: 1, color: Glass.hairline),
           if (section == NavSection.collections) ...[
