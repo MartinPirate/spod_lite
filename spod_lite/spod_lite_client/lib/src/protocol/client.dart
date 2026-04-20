@@ -19,11 +19,12 @@ import 'package:spod_lite_client/src/protocol/collections/collection_field.dart'
     as _i5;
 import 'package:spod_lite_client/src/protocol/greetings/greeting.dart' as _i6;
 import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i7;
+import 'package:spod_lite_client/src/protocol/users/app_user.dart' as _i8;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
-    as _i8;
-import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _i9;
-import 'protocol.dart' as _i10;
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+    as _i10;
+import 'protocol.dart' as _i11;
 
 /// {@category Endpoint}
 class EndpointAdminAuth extends _i1.EndpointRef {
@@ -137,6 +138,21 @@ class EndpointCollections extends _i1.EndpointRef {
     'collections',
     'delete',
     {'name': name},
+  );
+
+  /// Update the 5 per-op rules on an existing collection. Accepts any
+  /// subset; omitted keys stay unchanged. Allowed values: `public`,
+  /// `authed`, `admin`.
+  _i2.Future<_i4.CollectionDef> updateRules(
+    String name,
+    String rulesJson,
+  ) => caller.callServerEndpoint<_i4.CollectionDef>(
+    'collections',
+    'updateRules',
+    {
+      'name': name,
+      'rulesJson': rulesJson,
+    },
   );
 }
 
@@ -280,15 +296,64 @@ class EndpointPosts extends _i1.EndpointRef {
   );
 }
 
+/// Self-serve end-user auth. Public endpoint — anyone can hit `signUp`
+/// and `signIn`. Signing in returns a token that the SDK attaches to
+/// subsequent requests; the authentication handler resolves it into a
+/// `user` scope for rule evaluation.
+/// {@category Endpoint}
+class EndpointUserAuth extends _i1.EndpointRef {
+  EndpointUserAuth(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'userAuth';
+
+  _i2.Future<String> signUp(
+    String email,
+    String password,
+  ) => caller.callServerEndpoint<String>(
+    'userAuth',
+    'signUp',
+    {
+      'email': email,
+      'password': password,
+    },
+  );
+
+  _i2.Future<String> signIn(
+    String email,
+    String password,
+  ) => caller.callServerEndpoint<String>(
+    'userAuth',
+    'signIn',
+    {
+      'email': email,
+      'password': password,
+    },
+  );
+
+  _i2.Future<_i8.AppUser?> me(String token) =>
+      caller.callServerEndpoint<_i8.AppUser?>(
+        'userAuth',
+        'me',
+        {'token': token},
+      );
+
+  _i2.Future<void> signOut(String token) => caller.callServerEndpoint<void>(
+    'userAuth',
+    'signOut',
+    {'token': token},
+  );
+}
+
 class Modules {
   Modules(Client client) {
-    serverpod_auth_idp = _i8.Caller(client);
-    serverpod_auth_core = _i9.Caller(client);
+    serverpod_auth_idp = _i9.Caller(client);
+    serverpod_auth_core = _i10.Caller(client);
   }
 
-  late final _i8.Caller serverpod_auth_idp;
+  late final _i9.Caller serverpod_auth_idp;
 
-  late final _i9.Caller serverpod_auth_core;
+  late final _i10.Caller serverpod_auth_core;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -311,7 +376,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i10.Protocol(),
+         _i11.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -325,6 +390,7 @@ class Client extends _i1.ServerpodClientShared {
     records = EndpointRecords(this);
     greeting = EndpointGreeting(this);
     posts = EndpointPosts(this);
+    userAuth = EndpointUserAuth(this);
     modules = Modules(this);
   }
 
@@ -338,6 +404,8 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointPosts posts;
 
+  late final EndpointUserAuth userAuth;
+
   late final Modules modules;
 
   @override
@@ -347,6 +415,7 @@ class Client extends _i1.ServerpodClientShared {
     'records': records,
     'greeting': greeting,
     'posts': posts,
+    'userAuth': userAuth,
   };
 
   @override

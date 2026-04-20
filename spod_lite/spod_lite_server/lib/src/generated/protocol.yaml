@@ -10,6 +10,7 @@ collections:
   - fields:
   - create:
   - delete:
+  - updateRules:
 records:
   - list:
   - count:
@@ -23,3 +24,8 @@ posts:
   - listPosts:
   - createPost:
   - deletePost:
+userAuth:
+  - signUp:
+  - signIn:
+  - me:
+  - signOut:

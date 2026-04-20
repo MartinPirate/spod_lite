@@ -16,10 +16,11 @@ import '../collections/collections_endpoint.dart' as _i3;
 import '../collections/records_endpoint.dart' as _i4;
 import '../greetings/greeting_endpoint.dart' as _i5;
 import '../posts/posts_endpoint.dart' as _i6;
+import '../users/user_auth_endpoint.dart' as _i7;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _i7;
-import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _i8;
+import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
+    as _i9;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -53,6 +54,12 @@ class Endpoints extends _i1.EndpointDispatch {
         ..initialize(
           server,
           'posts',
+          null,
+        ),
+      'userAuth': _i7.UserAuthEndpoint()
+        ..initialize(
+          server,
+          'userAuth',
           null,
         ),
     };
@@ -259,6 +266,31 @@ class Endpoints extends _i1.EndpointDispatch {
                   (endpoints['collections'] as _i3.CollectionsEndpoint).delete(
                     session,
                     params['name'],
+                  ),
+        ),
+        'updateRules': _i1.MethodConnector(
+          name: 'updateRules',
+          params: {
+            'name': _i1.ParameterDescription(
+              name: 'name',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'rulesJson': _i1.ParameterDescription(
+              name: 'rulesJson',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['collections'] as _i3.CollectionsEndpoint)
+                  .updateRules(
+                    session,
+                    params['name'],
+                    params['rulesJson'],
                   ),
         ),
       },
@@ -501,9 +533,100 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _i7.Endpoints()
+    connectors['userAuth'] = _i1.EndpointConnector(
+      name: 'userAuth',
+      endpoint: endpoints['userAuth']!,
+      methodConnectors: {
+        'signUp': _i1.MethodConnector(
+          name: 'signUp',
+          params: {
+            'email': _i1.ParameterDescription(
+              name: 'email',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'password': _i1.ParameterDescription(
+              name: 'password',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['userAuth'] as _i7.UserAuthEndpoint).signUp(
+                session,
+                params['email'],
+                params['password'],
+              ),
+        ),
+        'signIn': _i1.MethodConnector(
+          name: 'signIn',
+          params: {
+            'email': _i1.ParameterDescription(
+              name: 'email',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'password': _i1.ParameterDescription(
+              name: 'password',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['userAuth'] as _i7.UserAuthEndpoint).signIn(
+                session,
+                params['email'],
+                params['password'],
+              ),
+        ),
+        'me': _i1.MethodConnector(
+          name: 'me',
+          params: {
+            'token': _i1.ParameterDescription(
+              name: 'token',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['userAuth'] as _i7.UserAuthEndpoint).me(
+                session,
+                params['token'],
+              ),
+        ),
+        'signOut': _i1.MethodConnector(
+          name: 'signOut',
+          params: {
+            'token': _i1.ParameterDescription(
+              name: 'token',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['userAuth'] as _i7.UserAuthEndpoint).signOut(
+                    session,
+                    params['token'],
+                  ),
+        ),
+      },
+    );
+    modules['serverpod_auth_idp'] = _i8.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i8.Endpoints()
+    modules['serverpod_auth_core'] = _i9.Endpoints()
       ..initializeEndpoints(server);
   }
 }

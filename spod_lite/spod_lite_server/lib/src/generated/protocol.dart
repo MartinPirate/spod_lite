@@ -23,13 +23,13 @@ import 'collections/collection_field.dart' as _i8;
 import 'collections/collection_field_spec.dart' as _i9;
 import 'greetings/greeting.dart' as _i10;
 import 'posts/post.dart' as _i11;
+import 'users/app_session.dart' as _i12;
+import 'users/app_user.dart' as _i13;
 import 'package:spod_lite_server/src/generated/collections/collection_def.dart'
-    as _i12;
-import 'package:spod_lite_server/src/generated/collections/collection_field.dart'
-    as _i13;
-import 'package:spod_lite_server/src/generated/collections/collection_field_spec.dart'
     as _i14;
-import 'package:spod_lite_server/src/generated/posts/post.dart' as _i15;
+import 'package:spod_lite_server/src/generated/collections/collection_field.dart'
+    as _i15;
+import 'package:spod_lite_server/src/generated/posts/post.dart' as _i16;
 export 'admin/admin_session.dart';
 export 'admin/admin_user.dart';
 export 'collections/collection_def.dart';
@@ -37,6 +37,8 @@ export 'collections/collection_field.dart';
 export 'collections/collection_field_spec.dart';
 export 'greetings/greeting.dart';
 export 'posts/post.dart';
+export 'users/app_session.dart';
+export 'users/app_user.dart';
 
 class Protocol extends _i1.SerializationManagerServer {
   Protocol._();
@@ -181,6 +183,153 @@ class Protocol extends _i1.SerializationManagerServer {
       managed: true,
     ),
     _i2.TableDefinition(
+      name: 'app_session',
+      dartName: 'AppSession',
+      schema: 'public',
+      module: 'spod_lite',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'app_session_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'token',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'appUserId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+          columnDefault: 'CURRENT_TIMESTAMP',
+        ),
+        _i2.ColumnDefinition(
+          name: 'expiresAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'app_session_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'app_session_token_uidx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'token',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'app_session_user_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'appUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
+      name: 'app_user',
+      dartName: 'AppUser',
+      schema: 'public',
+      module: 'spod_lite',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'app_user_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'email',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'passwordHash',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+          columnDefault: 'CURRENT_TIMESTAMP',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'app_user_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'app_user_email_uidx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'email',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
       name: 'collection_def',
       dartName: 'CollectionDef',
       schema: 'public',
@@ -204,6 +353,41 @@ class Protocol extends _i1.SerializationManagerServer {
           columnType: _i2.ColumnType.text,
           isNullable: false,
           dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'listRule',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'admin\'::text',
+        ),
+        _i2.ColumnDefinition(
+          name: 'viewRule',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'admin\'::text',
+        ),
+        _i2.ColumnDefinition(
+          name: 'createRule',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'admin\'::text',
+        ),
+        _i2.ColumnDefinition(
+          name: 'updateRule',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'admin\'::text',
+        ),
+        _i2.ColumnDefinition(
+          name: 'deleteRule',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'admin\'::text',
         ),
         _i2.ColumnDefinition(
           name: 'createdAt',
@@ -442,6 +626,12 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i11.Post) {
       return _i11.Post.fromJson(data) as T;
     }
+    if (t == _i12.AppSession) {
+      return _i12.AppSession.fromJson(data) as T;
+    }
+    if (t == _i13.AppUser) {
+      return _i13.AppUser.fromJson(data) as T;
+    }
     if (t == _i1.getType<_i5.AdminSession?>()) {
       return (data != null ? _i5.AdminSession.fromJson(data) : null) as T;
     }
@@ -464,29 +654,29 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i11.Post?>()) {
       return (data != null ? _i11.Post.fromJson(data) : null) as T;
     }
-    if (t == List<_i12.CollectionDef>) {
+    if (t == _i1.getType<_i12.AppSession?>()) {
+      return (data != null ? _i12.AppSession.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i13.AppUser?>()) {
+      return (data != null ? _i13.AppUser.fromJson(data) : null) as T;
+    }
+    if (t == List<_i14.CollectionDef>) {
       return (data as List)
-              .map((e) => deserialize<_i12.CollectionDef>(e))
+              .map((e) => deserialize<_i14.CollectionDef>(e))
               .toList()
           as T;
     }
-    if (t == List<_i13.CollectionField>) {
+    if (t == List<_i15.CollectionField>) {
       return (data as List)
-              .map((e) => deserialize<_i13.CollectionField>(e))
-              .toList()
-          as T;
-    }
-    if (t == List<_i14.CollectionFieldSpec>) {
-      return (data as List)
-              .map((e) => deserialize<_i14.CollectionFieldSpec>(e))
+              .map((e) => deserialize<_i15.CollectionField>(e))
               .toList()
           as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i15.Post>) {
-      return (data as List).map((e) => deserialize<_i15.Post>(e)).toList() as T;
+    if (t == List<_i16.Post>) {
+      return (data as List).map((e) => deserialize<_i16.Post>(e)).toList() as T;
     }
     try {
       return _i3.Protocol().deserialize<T>(data, t);
@@ -509,6 +699,8 @@ class Protocol extends _i1.SerializationManagerServer {
       _i9.CollectionFieldSpec => 'CollectionFieldSpec',
       _i10.Greeting => 'Greeting',
       _i11.Post => 'Post',
+      _i12.AppSession => 'AppSession',
+      _i13.AppUser => 'AppUser',
       _ => null,
     };
   }
@@ -537,6 +729,10 @@ class Protocol extends _i1.SerializationManagerServer {
         return 'Greeting';
       case _i11.Post():
         return 'Post';
+      case _i12.AppSession():
+        return 'AppSession';
+      case _i13.AppUser():
+        return 'AppUser';
     }
     className = _i2.Protocol().getClassNameForObject(data);
     if (className != null) {
@@ -579,6 +775,12 @@ class Protocol extends _i1.SerializationManagerServer {
     }
     if (dataClassName == 'Post') {
       return deserialize<_i11.Post>(data['data']);
+    }
+    if (dataClassName == 'AppSession') {
+      return deserialize<_i12.AppSession>(data['data']);
+    }
+    if (dataClassName == 'AppUser') {
+      return deserialize<_i13.AppUser>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -626,6 +828,10 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i8.CollectionField.t;
       case _i11.Post:
         return _i11.Post.t;
+      case _i12.AppSession:
+        return _i12.AppSession.t;
+      case _i13.AppUser:
+        return _i13.AppUser.t;
     }
     return null;
   }

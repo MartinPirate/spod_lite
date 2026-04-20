@@ -11,13 +11,14 @@ import 'src/web/routes/root.dart';
 
 /// The starting point of the Serverpod server.
 void run(List<String> args) async {
-  // Admin-token auth for dashboard endpoints. End-user / app auth will be
-  // added in a later milestone via a chained handler.
+  // Chained auth — admin tokens first, app-user tokens second. Either
+  // audience's sign-in sets the same `Authorization: Bearer` header and
+  // the handler resolves the appropriate scope.
   final pod = Serverpod(
     args,
     Protocol(),
     Endpoints(),
-    authenticationHandler: adminAuthenticationHandler,
+    authenticationHandler: chainedAuthenticationHandler,
   );
 
   // Setup a default page at the web root.
