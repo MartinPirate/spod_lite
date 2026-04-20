@@ -7,6 +7,7 @@ import 'src/admin/dev_seed.dart';
 import 'src/generated/endpoints.dart';
 import 'src/generated/protocol.dart';
 import 'src/web/routes/app_config_route.dart';
+import 'src/web/routes/docs_route.dart';
 import 'src/web/routes/root.dart';
 
 /// The starting point of the Serverpod server.
@@ -29,6 +30,10 @@ void run(List<String> args) async {
   // These are used by the default page.
   pod.webServer.addRoute(RootRoute(), '/');
   pod.webServer.addRoute(RootRoute(), '/index.html');
+
+  // In-server docs — markdown rendered from /docs/*.md.
+  pod.webServer.addRoute(DocsRoute(), '/docs');
+  pod.webServer.addRoute(DocsRoute(), '/docs/*');
 
   // Serve all files in the web/static relative directory under /.
   // These are used by the default web page.
