@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:serverpod/serverpod.dart';
 
 import 'src/admin/admin_authentication_handler.dart';
+import 'src/admin/dev_seed.dart';
 import 'src/generated/endpoints.dart';
 import 'src/generated/protocol.dart';
 import 'src/web/routes/app_config_route.dart';
@@ -63,4 +64,7 @@ void run(List<String> args) async {
 
   // Start the server.
   await pod.start();
+
+  // Seed the dev admin so sign-in works out of the box.
+  await seedDevAdminIfMissing(pod);
 }
