@@ -15,6 +15,8 @@ void main() async {
     createClient: () => Client('http://localhost:8088/')
       ..connectivityMonitor = FlutterConnectivityMonitor(),
     adminEndpoint: (c) => c.adminAuth,
+    collectionsEndpoint: (c) => c.collections,
+    recordsEndpoint: (c) => c.records,
   );
   await spod.auth.restore();
   runApp(const DemoApp());
