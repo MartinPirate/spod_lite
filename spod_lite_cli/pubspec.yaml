@@ -1,0 +1,21 @@
+name: spod_lite_cli
+description: The `spod` command — scaffold and run Serverpod Lite projects.
+version: 0.1.0
+# Kept private to the monorepo for now. Activated via
+#   dart pub global activate --source git \
+#     https://github.com/MartinPirate/spod_lite.git \
+#     --git-path spod_lite_cli
+publish_to: 'none'
+
+environment:
+  sdk: '^3.8.0'
+
+executables:
+  spod:
+
+dependencies:
+  args: ^2.5.0
+  path: ^1.9.0
+
+dev_dependencies:
+  lints: '>=3.0.0 <7.0.0'
