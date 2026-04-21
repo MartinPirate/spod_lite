@@ -136,9 +136,17 @@ Safe. Each `.listen()` is its own subscription. All observers see every event. C
 
 ---
 
+## Multi-instance (Redis)
+
+Every `postMessage` call inside Serverpod Lite is already marked `global: true`. That means:
+
+- **Single-node / dev** — Redis is disabled; Serverpod broadcasts the message *in-process* to every active subscriber on this server. Works unchanged.
+- **Multi-node / prod** — as soon as you enable Redis in your config, the same messages fan out to all server instances. No code change needed.
+
+`config/staging.yaml` and `config/production.yaml` ship with `redis.enabled: true` and sensible hostnames to edit. Point `redis.host` / `redis.port` at a reachable Redis instance and deploy — every server in the fleet will now see every `RecordEvent` regardless of which node wrote it.
+
 ## What realtime doesn't do (yet)
 
 - **No replay.** Clients that subscribe late don't get historical events — you'd normally combine `list()` for the initial snapshot with `watch()` for the delta.
 - **No filtering.** You get all events on a collection. Per-record filtering happens in your handler.
 - **No scope-aware events.** Deletes include the `recordId` but not the pre-delete record content, even if the subscriber would have been allowed to view it.
-- **Single-node by default.** Configure Redis in your Serverpod config for cross-instance.

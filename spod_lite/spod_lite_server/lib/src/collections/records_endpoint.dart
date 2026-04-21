@@ -212,6 +212,9 @@ class RecordsEndpoint extends Endpoint {
         recordJson: recordJson,
         at: DateTime.now().toUtc(),
       ),
+      // Broadcast across cluster nodes when Redis is enabled. Silently
+      // local-only when it isn't (single-node dev).
+      global: true,
     );
   }
 

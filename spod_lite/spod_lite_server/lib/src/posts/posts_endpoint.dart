@@ -22,7 +22,7 @@ class PostsEndpoint extends Endpoint {
   Future<Post> createPost(Session session, String title, String body) async {
     final post = Post(title: title, body: body);
     final saved = await Post.db.insertRow(session, post);
-    await session.messages.postMessage(_postsChannel, saved);
+    await session.messages.postMessage(_postsChannel, saved, global: true);
     return saved;
   }
 
