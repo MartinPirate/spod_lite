@@ -96,6 +96,62 @@ class SpodLiteUserAuth {
     _events.add(UserAuthEvent.sessionExpired);
   }
 
+  /// Ask the server to email a verification code to the currently
+  /// signed-in user. Safe to call repeatedly; no-op if already verified.
+  Future<void> requestEmailVerification() async {
+    final token = await _store.get();
+    if (token == null) {
+      throw SpodLiteUserAuthException('Sign-in required.');
+    }
+    try {
+      await _userAuthEndpoint.requestEmailVerification(token);
+    } catch (e) {
+      if (e is SpodLiteUserAuthException) rethrow;
+      throw SpodLiteUserAuthException(_clean(e));
+    }
+  }
+
+  /// Submit the 6-digit code the user received by email. Flips the
+  /// `emailVerified` flag on success.
+  Future<void> verifyEmail(String code) async {
+    final token = await _store.get();
+    if (token == null) {
+      throw SpodLiteUserAuthException('Sign-in required.');
+    }
+    try {
+      await _userAuthEndpoint.verifyEmail(token, code);
+    } catch (e) {
+      if (e is SpodLiteUserAuthException) rethrow;
+      throw SpodLiteUserAuthException(_clean(e));
+    }
+  }
+
+  /// Send a reset code to [email]. Returns silently whether or not the
+  /// account exists (no user enumeration).
+  Future<void> requestPasswordReset(String email) async {
+    try {
+      await _userAuthEndpoint.requestPasswordReset(email);
+    } catch (e) {
+      if (e is SpodLiteUserAuthException) rethrow;
+      throw SpodLiteUserAuthException(_clean(e));
+    }
+  }
+
+  /// Confirm the reset code and set a new password. Invalidates every
+  /// existing session on the account, so the caller must sign in again.
+  Future<void> confirmPasswordReset({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      await _userAuthEndpoint.confirmPasswordReset(email, code, newPassword);
+    } catch (e) {
+      if (e is SpodLiteUserAuthException) rethrow;
+      throw SpodLiteUserAuthException(_clean(e));
+    }
+  }
+
   void dispose() {
     _events.close();
   }
