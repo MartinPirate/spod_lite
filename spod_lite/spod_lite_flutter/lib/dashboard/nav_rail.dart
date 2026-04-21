@@ -3,7 +3,7 @@ import 'package:spod_lite_client/spod_lite_client.dart';
 
 import '../glass.dart';
 
-enum NavSection { collections, admins, users, logs, emails }
+enum NavSection { collections, admins, users, oauth, logs, emails }
 
 class NavRail extends StatelessWidget {
   final NavSection section;
@@ -59,6 +59,12 @@ class NavRail extends StatelessWidget {
             label: 'Users',
             selected: section == NavSection.users,
             onTap: () => onSectionChanged(NavSection.users),
+          ),
+          _Tab(
+            icon: Icons.key_outlined,
+            label: 'OAuth',
+            selected: section == NavSection.oauth,
+            onTap: () => onSectionChanged(NavSection.oauth),
           ),
           _Tab(
             icon: Icons.receipt_long_outlined,

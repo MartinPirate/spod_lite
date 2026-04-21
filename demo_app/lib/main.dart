@@ -21,8 +21,35 @@ void main() async {
     filesEndpoint: (c) => c.files,
     oauthEndpoint: (c) => c.oAuth,
   );
+  await _consumeOAuthRedirectIfPresent();
   await spod.userAuth.restore();
   runApp(const DemoApp());
+}
+
+/// If the app was just redirected back from a provider's consent
+/// screen, finish the flow before the UI mounts. We detect the redirect
+/// by looking for `state` + `code` in the current URL — Google's
+/// standard OAuth2 callback params — and hand them to the SDK. Once
+/// consumed we rely on SpodLite.userAuth.restore to populate the rest.
+Future<void> _consumeOAuthRedirectIfPresent() async {
+  final uri = Uri.base;
+  final state = uri.queryParameters['state'];
+  final code = uri.queryParameters['code'];
+  if (state == null || code == null) return;
+  try {
+    // Provider id isn't sent on the callback — we only ship Google
+    // today, so assume that. When we add more providers we'll either
+    // encode the provider into state or let the server derive it from
+    // the stored flow metadata.
+    await spod.oauth.completeAuth(
+      provider: 'google',
+      state: state,
+      code: code,
+    );
+  } catch (_) {
+    // Swallow — the UI's auth gate will render the sign-in screen
+    // again if this failed, and the user can retry cleanly.
+  }
 }
 
 class DemoApp extends StatelessWidget {

@@ -22,6 +22,7 @@ Future<void> enforceRule(
   Session session,
   String rule, {
   required String operation,
+  String? collection,
 }) async {
   final auth = session.authenticated;
 
@@ -29,6 +30,13 @@ Future<void> enforceRule(
   if (rule == 'public') return;
   if (rule == 'authed') {
     if (auth == null) {
+      auditRuleDenial(
+        session,
+        operation: operation,
+        rule: rule,
+        collection: collection,
+        reason: 'sign-in required',
+      );
       throw SpodLiteException(
         message: 'Sign-in required to $operation on this collection.',
         code: SpodLiteErrorCode.unauthorized,
@@ -38,12 +46,26 @@ Future<void> enforceRule(
   }
   if (rule == 'admin') {
     if (auth == null) {
+      auditRuleDenial(
+        session,
+        operation: operation,
+        rule: rule,
+        collection: collection,
+        reason: 'sign-in required',
+      );
       throw SpodLiteException(
         message: 'Sign-in required to $operation on this collection.',
         code: SpodLiteErrorCode.unauthorized,
       );
     }
     if (!auth.scopes.any((s) => s.name == 'admin')) {
+      auditRuleDenial(
+        session,
+        operation: operation,
+        rule: rule,
+        collection: collection,
+        reason: 'admin scope required',
+      );
       throw SpodLiteException(
         message: 'Admin access required to $operation on this collection.',
         code: SpodLiteErrorCode.forbidden,
@@ -66,6 +88,13 @@ Future<void> enforceRule(
   );
   final ok = evaluateBoolean(expr, ctx);
   if (!ok) {
+    auditRuleDenial(
+      session,
+      operation: operation,
+      rule: rule,
+      collection: collection,
+      reason: 'expression returned false',
+    );
     throw SpodLiteException(
       message: 'Not allowed to $operation on this collection.',
       code: auth == null
@@ -73,6 +102,42 @@ Future<void> enforceRule(
           : SpodLiteErrorCode.forbidden,
     );
   }
+}
+
+/// Emit a structured audit line for a rule denial. Callers (the
+/// collection-level enforcer above, or RecordsEndpoint for row-level
+/// checks) must invoke this whenever a principal is turned away —
+/// otherwise the logs show a 403/404 with no context on *why*. Logged
+/// at warning level so the dashboard's log viewer surfaces them by
+/// default.
+void auditRuleDenial(
+  Session session, {
+  required String operation,
+  required String rule,
+  String? collection,
+  int? recordId,
+  String reason = 'rule denied',
+}) {
+  final auth = session.authenticated;
+  final principal = auth == null
+      ? 'anonymous'
+      : 'user:${auth.userIdentifier} '
+          'scope:${auth.scopes.map((s) => s.name).join(",")}';
+  final target = collection == null
+      ? ''
+      : recordId == null
+          ? '"$collection" '
+          : '"$collection"/$recordId ';
+  session.log(
+    '[rules] $operation $target'
+    'principal=$principal rule="${_truncateRule(rule)}" — $reason',
+    level: LogLevel.warning,
+  );
+}
+
+String _truncateRule(String rule) {
+  if (rule.length <= 80) return rule;
+  return '${rule.substring(0, 77)}...';
 }
 
 /// Per-record check: evaluate [rule] against a concrete record. Used for

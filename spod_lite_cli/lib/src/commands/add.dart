@@ -11,6 +11,7 @@ class AddCommand extends Command<int> {
     addSubcommand(AddCollectionCommand());
     addSubcommand(AddEndpointCommand());
     addSubcommand(AddAdminCommand());
+    addSubcommand(AddOAuthCommand());
   }
 
   @override
@@ -475,5 +476,165 @@ class _Field {
     required this.name,
     required this.type,
     required this.required,
+  });
+}
+
+/// `spod add oauth <provider>` — print the setup walkthrough for a
+/// provider, and optionally upsert the credentials row via the running
+/// Postgres container when --client-id + --client-secret are passed.
+class AddOAuthCommand extends Command<int> {
+  AddOAuthCommand() {
+    argParser
+      ..addOption('client-id', help: 'Provider client id.')
+      ..addOption('client-secret', help: 'Provider client secret.')
+      ..addFlag('disabled',
+          defaultsTo: false,
+          help: 'Create the row but leave the provider disabled.')
+      ..addOption(
+        'db-container',
+        defaultsTo: 'spod-pg',
+        help: 'Docker container running Postgres.',
+      );
+  }
+
+  @override
+  String get name => 'oauth';
+
+  @override
+  String get description =>
+      'Wire up an OAuth provider: walkthrough, then upsert credentials.';
+
+  @override
+  String get invocation =>
+      'spod add oauth <provider> [--client-id=... --client-secret=...]';
+
+  static const _known = <String, _ProviderHint>{
+    'google': _ProviderHint(
+      label: 'Google',
+      console: 'https://console.cloud.google.com/apis/credentials',
+      clientType: 'OAuth 2.0 Client ID → Web application',
+      redirectExample:
+          'Local dev: http://localhost:8088/app/ (or your app\'s origin).',
+    ),
+    'github': _ProviderHint(
+      label: 'GitHub',
+      console: 'https://github.com/settings/developers',
+      clientType: 'OAuth Apps → New OAuth App',
+      redirectExample:
+          'Use the same origin + path your app receives the callback on.',
+    ),
+    'apple': _ProviderHint(
+      label: 'Apple',
+      console: 'https://developer.apple.com/account/resources/identifiers/list/serviceId',
+      clientType: 'Services ID with Sign in with Apple enabled',
+      redirectExample:
+          'Apple requires HTTPS — use a tunnel for local dev (e.g. ngrok).',
+    ),
+  };
+
+  @override
+  Future<int> run() async {
+    final rest = argResults?.rest ?? const [];
+    if (rest.length != 1) {
+      logErr('One provider id required.\n\nUsage: $invocation\n'
+          'Known: ${_known.keys.join(", ")}');
+      return 64;
+    }
+    final provider = rest.first.toLowerCase();
+    final hint = _known[provider];
+    if (hint == null) {
+      logErr('Unknown provider "$provider". '
+          'Add a class in lib/src/oauth/providers/ and register it first.');
+      return 64;
+    }
+
+    _printWalkthrough(provider, hint);
+
+    final clientId = argResults?['client-id'] as String?;
+    final clientSecret = argResults?['client-secret'] as String?;
+    if (clientId == null || clientSecret == null) {
+      stdout.writeln();
+      stdout.writeln(
+          'Pass --client-id and --client-secret once you have them, or');
+      stdout.writeln('set them from the dashboard under "OAuth providers".');
+      return 0;
+    }
+
+    final enabled = !(argResults?['disabled'] as bool);
+    final container = argResults?['db-container'] as String;
+
+    if (!await commandExists('docker')) {
+      logErr('`docker` is not on PATH — cannot insert credentials.');
+      return 69;
+    }
+
+    final sql =
+        "INSERT INTO oauth_provider_config "
+        "(provider, \"clientId\", \"clientSecret\", enabled, \"createdAt\", \"updatedAt\") "
+        "VALUES ('${_escape(provider)}', '${_escape(clientId)}', "
+        "'${_escape(clientSecret)}', $enabled, NOW(), NOW()) "
+        "ON CONFLICT (provider) DO UPDATE SET "
+        "\"clientId\" = EXCLUDED.\"clientId\", "
+        "\"clientSecret\" = EXCLUDED.\"clientSecret\", "
+        "enabled = EXCLUDED.enabled, "
+        "\"updatedAt\" = NOW() "
+        "RETURNING id;";
+
+    logStep('Upserting $provider config via $container …');
+    final result = await Process.run('docker', [
+      'exec',
+      container,
+      'psql',
+      '-U',
+      'postgres',
+      '-d',
+      'spod_lite',
+      '-t',
+      '-c',
+      sql,
+    ]);
+    if (result.exitCode != 0) {
+      logErr('psql failed:\n${result.stderr}');
+      return 70;
+    }
+    final idOut = (result.stdout as String).trim();
+    stdout.writeln();
+    stdout.writeln('✓ Saved $provider credentials (id=$idOut, '
+        'enabled=$enabled).');
+    stdout.writeln('  Sign-in-with-${hint.label} is now wired up.');
+    return 0;
+  }
+
+  void _printWalkthrough(String provider, _ProviderHint hint) {
+    stdout.writeln('Sign in with ${hint.label} — setup');
+    stdout.writeln('─' * 40);
+    stdout.writeln();
+    stdout.writeln('1. Open ${hint.console}');
+    stdout.writeln('2. Create: ${hint.clientType}');
+    stdout.writeln('3. Authorised redirect URI:');
+    stdout.writeln('     ${hint.redirectExample}');
+    stdout.writeln('4. Copy the client id and secret, then either:');
+    stdout.writeln('     a) save from the dashboard (/app/#oauth), or');
+    stdout.writeln('     b) rerun this command with');
+    stdout.writeln(
+        '        --client-id=... --client-secret=...');
+    stdout.writeln();
+    stdout.writeln(
+        'Clients/apps pull the enabled provider list from /oauth.listProviders.');
+  }
+
+  String _escape(String s) => s.replaceAll("'", "''");
+}
+
+class _ProviderHint {
+  final String label;
+  final String console;
+  final String clientType;
+  final String redirectExample;
+  const _ProviderHint({
+    required this.label,
+    required this.console,
+    required this.clientType,
+    required this.redirectExample,
   });
 }

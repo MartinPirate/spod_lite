@@ -38,7 +38,8 @@ class RecordsEndpoint extends Endpoint {
     final cappedPage = page.clamp(1, 100000);
     final cappedPerPage = perPage.clamp(1, 200);
     final def = await _requireCollection(session, collectionName);
-    await enforceRule(session, def.listRule, operation: 'list');
+    await enforceRule(session, def.listRule,
+        operation: 'list', collection: collectionName);
 
     final table = quoteIdent(tableNameFor(collectionName));
     final offset = (cappedPage - 1) * cappedPerPage;
@@ -74,7 +75,8 @@ class RecordsEndpoint extends Endpoint {
   Future<int> count(Session session, String collectionName) async {
     assertValidIdentifier(collectionName, kind: 'collection name');
     final def = await _requireCollection(session, collectionName);
-    await enforceRule(session, def.listRule, operation: 'list');
+    await enforceRule(session, def.listRule,
+        operation: 'list', collection: collectionName);
     final table = quoteIdent(tableNameFor(collectionName));
 
     if (!needsRowCheck(def.listRule)) {
@@ -103,7 +105,8 @@ class RecordsEndpoint extends Endpoint {
   ) async {
     assertValidIdentifier(collectionName, kind: 'collection name');
     final def = await _requireCollection(session, collectionName);
-    await enforceRule(session, def.viewRule, operation: 'view');
+    await enforceRule(session, def.viewRule,
+        operation: 'view', collection: collectionName);
 
     final table = quoteIdent(tableNameFor(collectionName));
     final result = await session.db.unsafeQuery(
@@ -118,6 +121,14 @@ class RecordsEndpoint extends Endpoint {
     if (needsRowCheck(def.viewRule)) {
       final auth = session.authenticated;
       if (!recordAllowed(rule: def.viewRule, auth: auth, record: row)) {
+        auditRuleDenial(
+          session,
+          operation: 'view',
+          collection: collectionName,
+          recordId: id,
+          rule: def.viewRule,
+          reason: 'row-level expression returned false',
+        );
         return null;
       }
     }
@@ -132,7 +143,8 @@ class RecordsEndpoint extends Endpoint {
     assertValidIdentifier(collectionName, kind: 'collection name');
     final data = _decodeJson(dataJson);
     final def = await _requireCollection(session, collectionName);
-    await enforceRule(session, def.createRule, operation: 'create');
+    await enforceRule(session, def.createRule,
+        operation: 'create', collection: collectionName);
     final fields = await CollectionField.db.find(
       session,
       where: (f) => f.collectionDefId.equals(def.id!),
@@ -168,6 +180,13 @@ class RecordsEndpoint extends Endpoint {
     if (needsRowCheck(def.createRule)) {
       final auth = session.authenticated;
       if (!recordAllowed(rule: def.createRule, auth: auth, record: proposed)) {
+        auditRuleDenial(
+          session,
+          operation: 'create',
+          collection: collectionName,
+          rule: def.createRule,
+          reason: 'row-level expression returned false on proposed payload',
+        );
         throw SpodLiteException(
           message: 'Not allowed to create this record.',
           code: auth == null
@@ -199,7 +218,8 @@ class RecordsEndpoint extends Endpoint {
     assertValidIdentifier(collectionName, kind: 'collection name');
     final data = _decodeJson(dataJson);
     final def = await _requireCollection(session, collectionName);
-    await enforceRule(session, def.updateRule, operation: 'update');
+    await enforceRule(session, def.updateRule,
+        operation: 'update', collection: collectionName);
     final fields = await CollectionField.db.find(
       session,
       where: (f) => f.collectionDefId.equals(def.id!),
@@ -237,6 +257,14 @@ class RecordsEndpoint extends Endpoint {
       final row = _normalize(current.first.toColumnMap());
       final auth = session.authenticated;
       if (!recordAllowed(rule: def.updateRule, auth: auth, record: row)) {
+        auditRuleDenial(
+          session,
+          operation: 'update',
+          collection: collectionName,
+          recordId: id,
+          rule: def.updateRule,
+          reason: 'row-level expression returned false on current row',
+        );
         throw SpodLiteException(
           message: 'Record $id not found in "$collectionName".',
           code: SpodLiteErrorCode.notFound,
@@ -267,7 +295,8 @@ class RecordsEndpoint extends Endpoint {
   ) async {
     assertValidIdentifier(collectionName, kind: 'collection name');
     final def = await _requireCollection(session, collectionName);
-    await enforceRule(session, def.deleteRule, operation: 'delete');
+    await enforceRule(session, def.deleteRule,
+        operation: 'delete', collection: collectionName);
 
     final table = quoteIdent(tableNameFor(collectionName));
 
@@ -280,6 +309,14 @@ class RecordsEndpoint extends Endpoint {
       final row = _normalize(current.first.toColumnMap());
       final auth = session.authenticated;
       if (!recordAllowed(rule: def.deleteRule, auth: auth, record: row)) {
+        auditRuleDenial(
+          session,
+          operation: 'delete',
+          collection: collectionName,
+          recordId: id,
+          rule: def.deleteRule,
+          reason: 'row-level expression returned false on current row',
+        );
         throw SpodLiteException(
           message: 'Record $id not found in "$collectionName".',
           code: SpodLiteErrorCode.notFound,
@@ -307,7 +344,8 @@ class RecordsEndpoint extends Endpoint {
   ) async* {
     assertValidIdentifier(collectionName, kind: 'collection name');
     final def = await _requireCollection(session, collectionName);
-    await enforceRule(session, def.listRule, operation: 'watch');
+    await enforceRule(session, def.listRule,
+        operation: 'watch', collection: collectionName);
 
     final stream = session.messages
         .createStream<RecordEvent>(_eventChannel(collectionName));

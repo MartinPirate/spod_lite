@@ -10,6 +10,7 @@ import 'screens/admins_screen.dart';
 import 'screens/collection_screen.dart';
 import 'screens/emails_screen.dart';
 import 'screens/logs_screen.dart';
+import 'screens/oauth_screen.dart';
 import 'screens/users_screen.dart';
 
 class DashboardShell extends StatefulWidget {
@@ -159,6 +160,8 @@ class _DashboardShellState extends State<DashboardShell> {
         return const AdminsScreen();
       case NavSection.users:
         return const UsersScreen();
+      case NavSection.oauth:
+        return const OAuthScreen();
       case NavSection.logs:
         return const LogsScreen();
       case NavSection.emails:
