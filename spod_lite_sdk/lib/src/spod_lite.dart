@@ -2,6 +2,7 @@ import 'package:serverpod_client/serverpod_client.dart';
 
 import 'spod_lite_auth.dart';
 import 'spod_lite_collections.dart';
+import 'spod_lite_oauth.dart';
 import 'spod_lite_user_auth.dart';
 import 'token_store.dart';
 
@@ -52,6 +53,11 @@ class SpodLite<C> {
   /// Dynamic-collections API — create collections, CRUD records, manage rules.
   late final SpodLiteCollections collections;
 
+  /// OAuth sign-in (Google today; more to follow). Shares the token
+  /// store with `userAuth` — successful OAuth promotes the user into
+  /// `userAuth.currentUser` without an extra call.
+  late final SpodLiteOAuth oauth;
+
   final SpodLiteTokenStore _adminStore;
   final SpodLiteTokenStore _userStore;
   final _ChainedKeyProvider _chained;
@@ -63,6 +69,7 @@ class SpodLite<C> {
     required EndpointAccessor<C> collectionsEndpoint,
     required EndpointAccessor<C> recordsEndpoint,
     required EndpointAccessor<C> filesEndpoint,
+    required EndpointAccessor<C> oauthEndpoint,
     String adminTokenPrefsKey = _adminPrefsKey,
     String userTokenPrefsKey = _userPrefsKey,
   })  : _adminStore = SpodLiteTokenStore(prefsKey: adminTokenPrefsKey),
@@ -79,6 +86,12 @@ class SpodLite<C> {
       collectionsEndpoint(client),
       recordsEndpoint(client),
       filesEndpoint(client),
+    );
+    oauth = SpodLiteOAuth(
+      oauthEndpoint(client),
+      userAuthEndpoint(client),
+      _userStore,
+      userAuth,
     );
   }
 

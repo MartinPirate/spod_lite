@@ -78,6 +78,15 @@ class SpodLiteUserAuth {
     }
   }
 
+  /// Adopt a session opened by the OAuth flow. The token is already in
+  /// the store by the time this is called; this just updates the
+  /// in-memory identity and fires a `signedIn` event so auth-gated UI
+  /// picks it up without an extra round-trip.
+  void adoptOAuthSession(UserIdentity identity) {
+    _currentUser = identity;
+    _events.add(UserAuthEvent.signedIn);
+  }
+
   Future<void> signOut() async {
     final token = await _store.get();
     if (token != null) {

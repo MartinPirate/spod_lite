@@ -27,6 +27,8 @@ const _iconFile =
     'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z';
 const _iconFlag =
     'M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9';
+const _iconKey =
+    'M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z';
 
 const _docs = <_Doc>[
   _Doc('getting-started', 'Getting started',
@@ -38,7 +40,10 @@ const _docs = <_Doc>[
       'Every method on spod.auth, spod.userAuth, spod.collections.',
       _iconBook),
   _Doc('rules', 'Rules',
-      'Per-op access rules — public / authed / admin.', _iconShield),
+      'Per-op access rules — simple modes and expression DSL.',
+      _iconShield),
+  _Doc('oauth', 'OAuth',
+      'Sign in with Google; pluggable provider layer.', _iconKey),
   _Doc('realtime', 'Realtime',
       'watch() streams over WebSocket.', _iconSignal),
   _Doc('files', 'File uploads',

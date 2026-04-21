@@ -1,0 +1,18 @@
+### Links an `AppUser` to an external OAuth identity. Lets the same
+### account be reached via multiple providers (Google + email, etc).
+class: UserOAuthLink
+table: user_oauth_link
+
+fields:
+  appUserId: int
+  provider: String
+  providerUserId: String
+  emailAtLink: String
+  linkedAt: DateTime?, defaultPersist=now
+
+indexes:
+  user_oauth_link_uidx:
+    fields: provider, providerUserId
+    unique: true
+  user_oauth_link_user_idx:
+    fields: appUserId

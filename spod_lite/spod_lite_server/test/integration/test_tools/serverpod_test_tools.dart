@@ -23,8 +23,10 @@ import 'dart:typed_data' as _i7;
 import 'package:spod_lite_server/src/generated/collections/record_event.dart'
     as _i8;
 import 'package:spod_lite_server/src/generated/greetings/greeting.dart' as _i9;
-import 'package:spod_lite_server/src/generated/posts/post.dart' as _i10;
-import 'package:spod_lite_server/src/generated/users/app_user.dart' as _i11;
+import 'package:spod_lite_server/src/generated/oauth/oauth_provider_config.dart'
+    as _i10;
+import 'package:spod_lite_server/src/generated/posts/post.dart' as _i11;
+import 'package:spod_lite_server/src/generated/users/app_user.dart' as _i12;
 import 'package:spod_lite_server/src/generated/protocol.dart';
 import 'package:spod_lite_server/src/generated/endpoints.dart';
 export 'package:serverpod_test/serverpod_test_public_exports.dart';
@@ -155,6 +157,10 @@ class TestEndpoints {
 
   late final _LogsEndpoint logs;
 
+  late final _OAuthConfigEndpoint oAuthConfig;
+
+  late final _OAuthEndpoint oAuth;
+
   late final _PostsEndpoint posts;
 
   late final _UserAuthEndpoint userAuth;
@@ -198,6 +204,14 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     logs = _LogsEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    oAuthConfig = _OAuthConfigEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    oAuth = _OAuthEndpoint(
       endpoints,
       serializationManager,
     );
@@ -1260,6 +1274,260 @@ class _LogsEndpoint {
   }
 }
 
+class _OAuthConfigEndpoint {
+  _OAuthConfigEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _i2.EndpointDispatch _endpointDispatch;
+
+  final _i2.SerializationManager _serializationManager;
+
+  _i3.Future<List<_i10.OAuthProviderConfig>> list(
+    _i1.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'oAuthConfig',
+            method: 'list',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'oAuthConfig',
+          methodName: 'list',
+          parameters: _i1.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i10.OAuthProviderConfig>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<List<String>> availableProviders(
+    _i1.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'oAuthConfig',
+            method: 'availableProviders',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'oAuthConfig',
+          methodName: 'availableProviders',
+          parameters: _i1.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<String>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i10.OAuthProviderConfig> save(
+    _i1.TestSessionBuilder sessionBuilder,
+    String provider,
+    String clientId,
+    String clientSecret,
+    bool enabled,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'oAuthConfig',
+            method: 'save',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'oAuthConfig',
+          methodName: 'save',
+          parameters: _i1.testObjectToJson({
+            'provider': provider,
+            'clientId': clientId,
+            'clientSecret': clientSecret,
+            'enabled': enabled,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i10.OAuthProviderConfig>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<void> delete(
+    _i1.TestSessionBuilder sessionBuilder,
+    String provider,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'oAuthConfig',
+            method: 'delete',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'oAuthConfig',
+          methodName: 'delete',
+          parameters: _i1.testObjectToJson({'provider': provider}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<void>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _OAuthEndpoint {
+  _OAuthEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _i2.EndpointDispatch _endpointDispatch;
+
+  final _i2.SerializationManager _serializationManager;
+
+  _i3.Future<List<String>> listProviders(
+    _i1.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'oAuth',
+            method: 'listProviders',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'oAuth',
+          methodName: 'listProviders',
+          parameters: _i1.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<String>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<String> getAuthUrl(
+    _i1.TestSessionBuilder sessionBuilder,
+    String provider,
+    String redirectUri,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'oAuth',
+            method: 'getAuthUrl',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'oAuth',
+          methodName: 'getAuthUrl',
+          parameters: _i1.testObjectToJson({
+            'provider': provider,
+            'redirectUri': redirectUri,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<String> completeAuth(
+    _i1.TestSessionBuilder sessionBuilder,
+    String provider,
+    String state,
+    String code,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'oAuth',
+            method: 'completeAuth',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'oAuth',
+          methodName: 'completeAuth',
+          parameters: _i1.testObjectToJson({
+            'provider': provider,
+            'state': state,
+            'code': code,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _PostsEndpoint {
   _PostsEndpoint(
     this._endpointDispatch,
@@ -1270,7 +1538,7 @@ class _PostsEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<List<_i10.Post>> listPosts(
+  _i3.Future<List<_i11.Post>> listPosts(
     _i1.TestSessionBuilder sessionBuilder,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
@@ -1292,7 +1560,7 @@ class _PostsEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i10.Post>>);
+                as _i3.Future<List<_i11.Post>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1300,7 +1568,7 @@ class _PostsEndpoint {
     });
   }
 
-  _i3.Future<_i10.Post> createPost(
+  _i3.Future<_i11.Post> createPost(
     _i1.TestSessionBuilder sessionBuilder,
     String title,
     String body,
@@ -1327,7 +1595,7 @@ class _PostsEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i10.Post>);
+                as _i3.Future<_i11.Post>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1366,8 +1634,8 @@ class _PostsEndpoint {
     });
   }
 
-  _i3.Stream<_i10.Post> watchPosts(_i1.TestSessionBuilder sessionBuilder) {
-    var _localTestStreamManager = _i1.TestStreamManager<_i10.Post>();
+  _i3.Stream<_i11.Post> watchPosts(_i1.TestSessionBuilder sessionBuilder) {
+    var _localTestStreamManager = _i1.TestStreamManager<_i11.Post>();
     _i1.callStreamFunctionAndHandleExceptions(
       () async {
         var _localUniqueSession =
@@ -1476,7 +1744,7 @@ class _UserAuthEndpoint {
     });
   }
 
-  _i3.Future<_i11.AppUser?> me(
+  _i3.Future<_i12.AppUser?> me(
     _i1.TestSessionBuilder sessionBuilder,
     String token,
   ) async {
@@ -1499,7 +1767,7 @@ class _UserAuthEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i11.AppUser?>);
+                as _i3.Future<_i12.AppUser?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1683,7 +1951,7 @@ class _UsersEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<List<_i11.AppUser>> list(
+  _i3.Future<List<_i12.AppUser>> list(
     _i1.TestSessionBuilder sessionBuilder, {
     required int page,
     required int perPage,
@@ -1710,7 +1978,7 @@ class _UsersEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i11.AppUser>>);
+                as _i3.Future<List<_i12.AppUser>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

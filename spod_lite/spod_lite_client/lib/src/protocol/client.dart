@@ -21,13 +21,15 @@ import 'dart:typed_data' as _i6;
 import 'package:spod_lite_client/src/protocol/collections/record_event.dart'
     as _i7;
 import 'package:spod_lite_client/src/protocol/greetings/greeting.dart' as _i8;
-import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i9;
-import 'package:spod_lite_client/src/protocol/users/app_user.dart' as _i10;
+import 'package:spod_lite_client/src/protocol/oauth/oauth_provider_config.dart'
+    as _i9;
+import 'package:spod_lite_client/src/protocol/posts/post.dart' as _i10;
+import 'package:spod_lite_client/src/protocol/users/app_user.dart' as _i11;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
-    as _i11;
-import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _i12;
-import 'protocol.dart' as _i13;
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+    as _i13;
+import 'protocol.dart' as _i14;
 
 /// {@category Endpoint}
 class EndpointAdminAuth extends _i1.EndpointRef {
@@ -334,7 +336,12 @@ class EndpointRecords extends _i1.EndpointRef {
   );
 
   /// Live stream of record events for a collection. Enforces the same
-  /// rule as `list`.
+  /// rule as `list`. For row-level rules, `created`/`updated` events are
+  /// filtered against the current state; `deleted` events carry only an
+  /// id (no row to evaluate) and are delivered unconditionally — UIs
+  /// need the signal to remove stale items they may have already
+  /// surfaced. This trades a small existence leak for live-sync
+  /// usability; see docs/rules.md.
   _i2.Stream<_i7.RecordEvent> watch(String collectionName) =>
       caller.callStreamingServerEndpoint<
         _i2.Stream<_i7.RecordEvent>,
@@ -422,6 +429,131 @@ class EndpointLogs extends _i1.EndpointRef {
   );
 }
 
+/// Admin-only config for OAuth providers. The dashboard uses this to
+/// set `client_id` / `client_secret` on each provider and toggle it on
+/// or off without redeploying.
+///
+/// `clientSecret` is never returned over the wire — callers read a
+/// flag-y empty string and write a new secret when they need to
+/// rotate it. Writing an empty secret leaves the stored value
+/// unchanged (so the dashboard can re-save other fields without
+/// knowing the current secret).
+/// {@category Endpoint}
+class EndpointOAuthConfig extends _i1.EndpointRef {
+  EndpointOAuthConfig(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'oAuthConfig';
+
+  /// All configs, secrets redacted. Unconfigured providers (registered
+  /// in [OAuthRegistry] but missing from the table) are *not* returned
+  /// — the dashboard lists them by walking `availableProviders`.
+  _i2.Future<List<_i9.OAuthProviderConfig>> list() =>
+      caller.callServerEndpoint<List<_i9.OAuthProviderConfig>>(
+        'oAuthConfig',
+        'list',
+        {},
+      );
+
+  /// Every provider the server *knows how to speak*, regardless of
+  /// whether it's configured. Dashboard uses this + `list` to show
+  /// "add provider" tiles for anything not yet set up.
+  _i2.Future<List<String>> availableProviders() =>
+      caller.callServerEndpoint<List<String>>(
+        'oAuthConfig',
+        'availableProviders',
+        {},
+      );
+
+  /// Upsert a provider row.
+  ///
+  /// - [clientSecret] empty → keep the stored secret (rotation-safe)
+  /// - [clientSecret] non-empty → replace the stored secret
+  /// - The row is created if it doesn't exist yet.
+  _i2.Future<_i9.OAuthProviderConfig> save(
+    String provider,
+    String clientId,
+    String clientSecret,
+    bool enabled,
+  ) => caller.callServerEndpoint<_i9.OAuthProviderConfig>(
+    'oAuthConfig',
+    'save',
+    {
+      'provider': provider,
+      'clientId': clientId,
+      'clientSecret': clientSecret,
+      'enabled': enabled,
+    },
+  );
+
+  /// Deletes the row for [provider]. Does nothing if no row exists —
+  /// idempotent.
+  _i2.Future<void> delete(String provider) => caller.callServerEndpoint<void>(
+    'oAuthConfig',
+    'delete',
+    {'provider': provider},
+  );
+}
+
+/// Public OAuth flow. Three endpoints, zero admin scope:
+///
+/// 1. `listProviders` — which providers are enabled on this server.
+/// 2. `getAuthUrl` — start a flow; returns the consent URL the browser
+///    opens and stores a single-use state nonce server-side.
+/// 3. `completeAuth` — finish a flow; exchanges the code, finds-or-
+///    creates the `AppUser`, and returns an `AppSession` token.
+/// {@category Endpoint}
+class EndpointOAuth extends _i1.EndpointRef {
+  EndpointOAuth(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'oAuth';
+
+  /// Ids of providers that are both registered in [OAuthRegistry] *and*
+  /// have an enabled row in `oauth_provider_config`. The dashboard/app
+  /// uses this to decide which sign-in buttons to render.
+  _i2.Future<List<String>> listProviders() =>
+      caller.callServerEndpoint<List<String>>(
+        'oAuth',
+        'listProviders',
+        {},
+      );
+
+  /// Returns the URL to open in a browser to start the OAuth flow.
+  /// The caller must pass the same [redirectUri] it registered with
+  /// the provider — we round-trip it through state so the token
+  /// exchange supplies the same value Google signed against.
+  _i2.Future<String> getAuthUrl(
+    String provider,
+    String redirectUri,
+  ) => caller.callServerEndpoint<String>(
+    'oAuth',
+    'getAuthUrl',
+    {
+      'provider': provider,
+      'redirectUri': redirectUri,
+    },
+  );
+
+  /// Completes an OAuth flow. Consumes the state, exchanges the code,
+  /// resolves identity, then either links to an existing user (by
+  /// verified email) or provisions a new one. Returns an app-session
+  /// token the SDK can use immediately.
+  _i2.Future<String> completeAuth(
+    String provider,
+    String state,
+    String code,
+  ) => caller.callServerEndpoint<String>(
+    'oAuth',
+    'completeAuth',
+    {
+      'provider': provider,
+      'state': state,
+      'code': code,
+    },
+  );
+}
+
 /// Legacy demo endpoint kept around for the demo app. Gated via
 /// `requireLogin` so any authenticated caller (admin or end-user) can use
 /// it. New work should prefer the generic collections/records API which
@@ -433,17 +565,17 @@ class EndpointPosts extends _i1.EndpointRef {
   @override
   String get name => 'posts';
 
-  _i2.Future<List<_i9.Post>> listPosts() =>
-      caller.callServerEndpoint<List<_i9.Post>>(
+  _i2.Future<List<_i10.Post>> listPosts() =>
+      caller.callServerEndpoint<List<_i10.Post>>(
         'posts',
         'listPosts',
         {},
       );
 
-  _i2.Future<_i9.Post> createPost(
+  _i2.Future<_i10.Post> createPost(
     String title,
     String body,
-  ) => caller.callServerEndpoint<_i9.Post>(
+  ) => caller.callServerEndpoint<_i10.Post>(
     'posts',
     'createPost',
     {
@@ -460,8 +592,8 @@ class EndpointPosts extends _i1.EndpointRef {
 
   /// Live feed — every new post from [createPost] is pushed to subscribers
   /// over a WebSocket. Useful primarily for the demo app.
-  _i2.Stream<_i9.Post> watchPosts() =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i9.Post>, _i9.Post>(
+  _i2.Stream<_i10.Post> watchPosts() =>
+      caller.callStreamingServerEndpoint<_i2.Stream<_i10.Post>, _i10.Post>(
         'posts',
         'watchPosts',
         {},
@@ -504,8 +636,8 @@ class EndpointUserAuth extends _i1.EndpointRef {
     },
   );
 
-  _i2.Future<_i10.AppUser?> me(String token) =>
-      caller.callServerEndpoint<_i10.AppUser?>(
+  _i2.Future<_i11.AppUser?> me(String token) =>
+      caller.callServerEndpoint<_i11.AppUser?>(
         'userAuth',
         'me',
         {'token': token},
@@ -576,10 +708,10 @@ class EndpointUsers extends _i1.EndpointRef {
   @override
   String get name => 'users';
 
-  _i2.Future<List<_i10.AppUser>> list({
+  _i2.Future<List<_i11.AppUser>> list({
     required int page,
     required int perPage,
-  }) => caller.callServerEndpoint<List<_i10.AppUser>>(
+  }) => caller.callServerEndpoint<List<_i11.AppUser>>(
     'users',
     'list',
     {
@@ -616,13 +748,13 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    serverpod_auth_idp = _i11.Caller(client);
-    serverpod_auth_core = _i12.Caller(client);
+    serverpod_auth_idp = _i12.Caller(client);
+    serverpod_auth_core = _i13.Caller(client);
   }
 
-  late final _i11.Caller serverpod_auth_idp;
+  late final _i12.Caller serverpod_auth_idp;
 
-  late final _i12.Caller serverpod_auth_core;
+  late final _i13.Caller serverpod_auth_core;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -645,7 +777,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i13.Protocol(),
+         _i14.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -662,6 +794,8 @@ class Client extends _i1.ServerpodClientShared {
     emails = EndpointEmails(this);
     greeting = EndpointGreeting(this);
     logs = EndpointLogs(this);
+    oAuthConfig = EndpointOAuthConfig(this);
+    oAuth = EndpointOAuth(this);
     posts = EndpointPosts(this);
     userAuth = EndpointUserAuth(this);
     users = EndpointUsers(this);
@@ -684,6 +818,10 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointLogs logs;
 
+  late final EndpointOAuthConfig oAuthConfig;
+
+  late final EndpointOAuth oAuth;
+
   late final EndpointPosts posts;
 
   late final EndpointUserAuth userAuth;
@@ -702,6 +840,8 @@ class Client extends _i1.ServerpodClientShared {
     'emails': emails,
     'greeting': greeting,
     'logs': logs,
+    'oAuthConfig': oAuthConfig,
+    'oAuth': oAuth,
     'posts': posts,
     'userAuth': userAuth,
     'users': users,

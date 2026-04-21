@@ -1,0 +1,21 @@
+### Admin-managed OAuth provider credentials. One row per provider
+### (google, github, apple). clientSecret is stored plaintext — access
+### is restricted to admin-scoped endpoints. If you need at-rest
+### encryption, hold the secret in an env var and leave this row blank
+### for that provider; the provider resolves clientSecret from env
+### when the column is null.
+class: OAuthProviderConfig
+table: oauth_provider_config
+
+fields:
+  provider: String
+  clientId: String
+  clientSecret: String?
+  enabled: bool, default=true
+  createdAt: DateTime?, defaultPersist=now
+  updatedAt: DateTime?, defaultPersist=now
+
+indexes:
+  oauth_provider_config_uidx:
+    fields: provider
+    unique: true

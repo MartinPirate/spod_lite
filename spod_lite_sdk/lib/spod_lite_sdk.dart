@@ -12,6 +12,8 @@ export 'src/spod_lite_auth.dart'
     show SpodLiteAuth, AuthEvent, SpodLiteAuthException;
 export 'src/spod_lite_user_auth.dart'
     show SpodLiteUserAuth, UserAuthEvent, SpodLiteUserAuthException;
+export 'src/spod_lite_oauth.dart'
+    show SpodLiteOAuth, SpodLiteOAuthException;
 export 'src/spod_lite_collections.dart';
 export 'src/admin_identity.dart';
 export 'src/user_identity.dart';

@@ -25,16 +25,20 @@ import 'collections/record_event.dart' as _i10;
 import 'errors/spod_lite_error_code.dart' as _i11;
 import 'errors/spod_lite_exception.dart' as _i12;
 import 'greetings/greeting.dart' as _i13;
-import 'posts/post.dart' as _i14;
-import 'users/app_session.dart' as _i15;
-import 'users/app_user.dart' as _i16;
-import 'package:spod_lite_server/src/generated/admin/admin_user.dart' as _i17;
+import 'oauth/oauth_provider_config.dart' as _i14;
+import 'oauth/user_oauth_link.dart' as _i15;
+import 'posts/post.dart' as _i16;
+import 'users/app_session.dart' as _i17;
+import 'users/app_user.dart' as _i18;
+import 'package:spod_lite_server/src/generated/admin/admin_user.dart' as _i19;
 import 'package:spod_lite_server/src/generated/collections/collection_def.dart'
-    as _i18;
+    as _i20;
 import 'package:spod_lite_server/src/generated/collections/collection_field.dart'
-    as _i19;
-import 'package:spod_lite_server/src/generated/posts/post.dart' as _i20;
-import 'package:spod_lite_server/src/generated/users/app_user.dart' as _i21;
+    as _i21;
+import 'package:spod_lite_server/src/generated/oauth/oauth_provider_config.dart'
+    as _i22;
+import 'package:spod_lite_server/src/generated/posts/post.dart' as _i23;
+import 'package:spod_lite_server/src/generated/users/app_user.dart' as _i24;
 export 'admin/admin_session.dart';
 export 'admin/admin_user.dart';
 export 'collections/collection_def.dart';
@@ -44,6 +48,8 @@ export 'collections/record_event.dart';
 export 'errors/spod_lite_error_code.dart';
 export 'errors/spod_lite_exception.dart';
 export 'greetings/greeting.dart';
+export 'oauth/oauth_provider_config.dart';
+export 'oauth/user_oauth_link.dart';
 export 'posts/post.dart';
 export 'users/app_session.dart';
 export 'users/app_user.dart';
@@ -562,6 +568,90 @@ class Protocol extends _i1.SerializationManagerServer {
       managed: true,
     ),
     _i2.TableDefinition(
+      name: 'oauth_provider_config',
+      dartName: 'OAuthProviderConfig',
+      schema: 'public',
+      module: 'spod_lite',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'oauth_provider_config_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'provider',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'clientId',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'clientSecret',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'enabled',
+          columnType: _i2.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'true',
+        ),
+        _i2.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+          columnDefault: 'CURRENT_TIMESTAMP',
+        ),
+        _i2.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+          columnDefault: 'CURRENT_TIMESTAMP',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'oauth_provider_config_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'oauth_provider_config_uidx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'provider',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
       name: 'post',
       dartName: 'Post',
       schema: 'public',
@@ -608,6 +698,99 @@ class Protocol extends _i1.SerializationManagerServer {
           type: 'btree',
           isUnique: true,
           isPrimary: true,
+        ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
+      name: 'user_oauth_link',
+      dartName: 'UserOAuthLink',
+      schema: 'public',
+      module: 'spod_lite',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'user_oauth_link_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'appUserId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'provider',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'providerUserId',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'emailAtLink',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'linkedAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+          columnDefault: 'CURRENT_TIMESTAMP',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'user_oauth_link_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'user_oauth_link_uidx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'provider',
+            ),
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'providerUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'user_oauth_link_user_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'appUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
         ),
       ],
       managed: true,
@@ -671,14 +854,20 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i13.Greeting) {
       return _i13.Greeting.fromJson(data) as T;
     }
-    if (t == _i14.Post) {
-      return _i14.Post.fromJson(data) as T;
+    if (t == _i14.OAuthProviderConfig) {
+      return _i14.OAuthProviderConfig.fromJson(data) as T;
     }
-    if (t == _i15.AppSession) {
-      return _i15.AppSession.fromJson(data) as T;
+    if (t == _i15.UserOAuthLink) {
+      return _i15.UserOAuthLink.fromJson(data) as T;
     }
-    if (t == _i16.AppUser) {
-      return _i16.AppUser.fromJson(data) as T;
+    if (t == _i16.Post) {
+      return _i16.Post.fromJson(data) as T;
+    }
+    if (t == _i17.AppSession) {
+      return _i17.AppSession.fromJson(data) as T;
+    }
+    if (t == _i18.AppUser) {
+      return _i18.AppUser.fromJson(data) as T;
     }
     if (t == _i1.getType<_i5.AdminSession?>()) {
       return (data != null ? _i5.AdminSession.fromJson(data) : null) as T;
@@ -708,39 +897,52 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i13.Greeting?>()) {
       return (data != null ? _i13.Greeting.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i14.Post?>()) {
-      return (data != null ? _i14.Post.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i15.AppSession?>()) {
-      return (data != null ? _i15.AppSession.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i16.AppUser?>()) {
-      return (data != null ? _i16.AppUser.fromJson(data) : null) as T;
-    }
-    if (t == List<_i17.AdminUser>) {
-      return (data as List).map((e) => deserialize<_i17.AdminUser>(e)).toList()
+    if (t == _i1.getType<_i14.OAuthProviderConfig?>()) {
+      return (data != null ? _i14.OAuthProviderConfig.fromJson(data) : null)
           as T;
     }
-    if (t == List<_i18.CollectionDef>) {
+    if (t == _i1.getType<_i15.UserOAuthLink?>()) {
+      return (data != null ? _i15.UserOAuthLink.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i16.Post?>()) {
+      return (data != null ? _i16.Post.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i17.AppSession?>()) {
+      return (data != null ? _i17.AppSession.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i18.AppUser?>()) {
+      return (data != null ? _i18.AppUser.fromJson(data) : null) as T;
+    }
+    if (t == List<_i19.AdminUser>) {
+      return (data as List).map((e) => deserialize<_i19.AdminUser>(e)).toList()
+          as T;
+    }
+    if (t == List<_i20.CollectionDef>) {
       return (data as List)
-              .map((e) => deserialize<_i18.CollectionDef>(e))
+              .map((e) => deserialize<_i20.CollectionDef>(e))
               .toList()
           as T;
     }
-    if (t == List<_i19.CollectionField>) {
+    if (t == List<_i21.CollectionField>) {
       return (data as List)
-              .map((e) => deserialize<_i19.CollectionField>(e))
+              .map((e) => deserialize<_i21.CollectionField>(e))
               .toList()
           as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i20.Post>) {
-      return (data as List).map((e) => deserialize<_i20.Post>(e)).toList() as T;
+    if (t == List<_i22.OAuthProviderConfig>) {
+      return (data as List)
+              .map((e) => deserialize<_i22.OAuthProviderConfig>(e))
+              .toList()
+          as T;
     }
-    if (t == List<_i21.AppUser>) {
-      return (data as List).map((e) => deserialize<_i21.AppUser>(e)).toList()
+    if (t == List<_i23.Post>) {
+      return (data as List).map((e) => deserialize<_i23.Post>(e)).toList() as T;
+    }
+    if (t == List<_i24.AppUser>) {
+      return (data as List).map((e) => deserialize<_i24.AppUser>(e)).toList()
           as T;
     }
     try {
@@ -766,9 +968,11 @@ class Protocol extends _i1.SerializationManagerServer {
       _i11.SpodLiteErrorCode => 'SpodLiteErrorCode',
       _i12.SpodLiteException => 'SpodLiteException',
       _i13.Greeting => 'Greeting',
-      _i14.Post => 'Post',
-      _i15.AppSession => 'AppSession',
-      _i16.AppUser => 'AppUser',
+      _i14.OAuthProviderConfig => 'OAuthProviderConfig',
+      _i15.UserOAuthLink => 'UserOAuthLink',
+      _i16.Post => 'Post',
+      _i17.AppSession => 'AppSession',
+      _i18.AppUser => 'AppUser',
       _ => null,
     };
   }
@@ -801,11 +1005,15 @@ class Protocol extends _i1.SerializationManagerServer {
         return 'SpodLiteException';
       case _i13.Greeting():
         return 'Greeting';
-      case _i14.Post():
+      case _i14.OAuthProviderConfig():
+        return 'OAuthProviderConfig';
+      case _i15.UserOAuthLink():
+        return 'UserOAuthLink';
+      case _i16.Post():
         return 'Post';
-      case _i15.AppSession():
+      case _i17.AppSession():
         return 'AppSession';
-      case _i16.AppUser():
+      case _i18.AppUser():
         return 'AppUser';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -856,14 +1064,20 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'Greeting') {
       return deserialize<_i13.Greeting>(data['data']);
     }
+    if (dataClassName == 'OAuthProviderConfig') {
+      return deserialize<_i14.OAuthProviderConfig>(data['data']);
+    }
+    if (dataClassName == 'UserOAuthLink') {
+      return deserialize<_i15.UserOAuthLink>(data['data']);
+    }
     if (dataClassName == 'Post') {
-      return deserialize<_i14.Post>(data['data']);
+      return deserialize<_i16.Post>(data['data']);
     }
     if (dataClassName == 'AppSession') {
-      return deserialize<_i15.AppSession>(data['data']);
+      return deserialize<_i17.AppSession>(data['data']);
     }
     if (dataClassName == 'AppUser') {
-      return deserialize<_i16.AppUser>(data['data']);
+      return deserialize<_i18.AppUser>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -909,12 +1123,16 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i7.CollectionDef.t;
       case _i8.CollectionField:
         return _i8.CollectionField.t;
-      case _i14.Post:
-        return _i14.Post.t;
-      case _i15.AppSession:
-        return _i15.AppSession.t;
-      case _i16.AppUser:
-        return _i16.AppUser.t;
+      case _i14.OAuthProviderConfig:
+        return _i14.OAuthProviderConfig.t;
+      case _i15.UserOAuthLink:
+        return _i15.UserOAuthLink.t;
+      case _i16.Post:
+        return _i16.Post.t;
+      case _i17.AppSession:
+        return _i17.AppSession.t;
+      case _i18.AppUser:
+        return _i18.AppUser.t;
     }
     return null;
   }

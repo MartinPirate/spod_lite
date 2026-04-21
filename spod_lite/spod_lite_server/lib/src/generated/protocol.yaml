@@ -35,6 +35,15 @@ greeting:
 logs:
   - recent:
   - count:
+oAuthConfig:
+  - list:
+  - availableProviders:
+  - save:
+  - delete:
+oAuth:
+  - listProviders:
+  - getAuthUrl:
+  - completeAuth:
 posts:
   - listPosts:
   - createPost:

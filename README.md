@@ -205,12 +205,17 @@ See **[docs/architecture.md](docs/architecture.md)** for the full picture. Ten-s
 
 Shipped in M1 + M2: admin dashboard, dynamic collections, rules, end-user auth, realtime, files, emails, CLI, docs.
 
-Up next (M3):
-- Record-level rules (`@record.owner = @request.auth.id`)
-- OAuth providers on end-user auth
-- Email verification + password reset flows (using the emails module)
-- Multi-instance realtime via Redis
-- `spod` CLI gains `add endpoint`, `add admin`, `logs`
+Shipped in M3:
+- Record-level rules — expression DSL over `@request` and `@record`
+- Email verification + password reset (console driver in dev, SMTP in prod)
+- Multi-instance realtime via Redis (`global: true` on every event)
+- `spod` CLI gains `add endpoint`, `add admin`, `logs`, `deploy`, `generate`
+- OAuth sign-in — Google today; provider interface for GitHub / Apple
+
+Next:
+- Dashboard UI for OAuth provider config
+- `spod add oauth <provider>` scaffold
+- Audit logging for rule denials
 
 ---
 

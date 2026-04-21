@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:bcrypt/bcrypt.dart';
@@ -6,9 +5,9 @@ import 'package:serverpod/serverpod.dart';
 
 import '../emails/email_driver.dart';
 import '../generated/protocol.dart';
+import 'session_mint.dart';
 import 'user_rate_limiter.dart';
 
-const _sessionTtl = Duration(days: 30);
 const _codeTtl = Duration(hours: 1);
 
 /// Self-serve end-user auth. Public endpoint — anyone can hit `signUp`
@@ -41,7 +40,7 @@ class UserAuthEndpoint extends Endpoint {
       session,
       AppUser(email: normalized, passwordHash: hash),
     );
-    return _issueSession(session, user.id!);
+    return mintAppSession(session, user.id!);
   }
 
   Future<String> signIn(
@@ -56,7 +55,7 @@ class UserAuthEndpoint extends Endpoint {
       session,
       where: (u) => u.email.equals(normalized),
     );
-    if (user == null || !BCrypt.checkpw(password, user.passwordHash)) {
+    if (user == null || !_verifyPassword(password, user.passwordHash)) {
       UserSignInRateLimiter.recordFailure(normalized);
       session.log('[UserAuth] failed sign-in for $normalized',
           level: LogLevel.warning);
@@ -66,7 +65,20 @@ class UserAuthEndpoint extends Endpoint {
       );
     }
     UserSignInRateLimiter.recordSuccess(normalized);
-    return _issueSession(session, user.id!);
+    return mintAppSession(session, user.id!);
+  }
+
+  /// Verifies [password] against [hash]. Returns false for any hash that
+  /// isn't a well-formed bcrypt digest (e.g. the `!oauth` sentinel used
+  /// for OAuth-only accounts) instead of letting [BCrypt.checkpw] throw
+  /// on malformed input. Fails closed.
+  bool _verifyPassword(String password, String hash) {
+    if (!hash.startsWith(r'$2')) return false;
+    try {
+      return BCrypt.checkpw(password, hash);
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<AppUser?> me(Session session, String token) async {
@@ -248,19 +260,6 @@ class UserAuthEndpoint extends Endpoint {
     return n.toString().padLeft(6, '0');
   }
 
-  Future<String> _issueSession(Session session, int userId) async {
-    final token = _randomToken();
-    await AppSession.db.insertRow(
-      session,
-      AppSession(
-        token: token,
-        appUserId: userId,
-        expiresAt: DateTime.now().toUtc().add(_sessionTtl),
-      ),
-    );
-    return token;
-  }
-
   Future<AppUser?> _resolveUser(Session session, String token) async {
     if (token.isEmpty) return null;
     final appSession = await AppSession.db.findFirstRow(
@@ -275,11 +274,6 @@ class UserAuthEndpoint extends Endpoint {
     }
     return AppUser.db.findById(session, appSession.appUserId);
   }
-}
-
-String _randomToken() {
-  final bytes = List<int>.generate(32, (_) => Random.secure().nextInt(256));
-  return base64UrlEncode(bytes).replaceAll('=', '');
 }
 
 String _normalizeEmail(String email) => email.trim().toLowerCase();

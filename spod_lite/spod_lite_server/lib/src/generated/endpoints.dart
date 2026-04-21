@@ -19,14 +19,16 @@ import '../collections/records_endpoint.dart' as _i6;
 import '../emails/emails_endpoint.dart' as _i7;
 import '../greetings/greeting_endpoint.dart' as _i8;
 import '../logs/logs_endpoint.dart' as _i9;
-import '../posts/posts_endpoint.dart' as _i10;
-import '../users/user_auth_endpoint.dart' as _i11;
-import '../users/users_endpoint.dart' as _i12;
-import 'dart:typed_data' as _i13;
+import '../oauth/oauth_config_endpoint.dart' as _i10;
+import '../oauth/oauth_endpoint.dart' as _i11;
+import '../posts/posts_endpoint.dart' as _i12;
+import '../users/user_auth_endpoint.dart' as _i13;
+import '../users/users_endpoint.dart' as _i14;
+import 'dart:typed_data' as _i15;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _i14;
+    as _i16;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
-    as _i15;
+    as _i17;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -80,19 +82,31 @@ class Endpoints extends _i1.EndpointDispatch {
           'logs',
           null,
         ),
-      'posts': _i10.PostsEndpoint()
+      'oAuthConfig': _i10.OAuthConfigEndpoint()
+        ..initialize(
+          server,
+          'oAuthConfig',
+          null,
+        ),
+      'oAuth': _i11.OAuthEndpoint()
+        ..initialize(
+          server,
+          'oAuth',
+          null,
+        ),
+      'posts': _i12.PostsEndpoint()
         ..initialize(
           server,
           'posts',
           null,
         ),
-      'userAuth': _i11.UserAuthEndpoint()
+      'userAuth': _i13.UserAuthEndpoint()
         ..initialize(
           server,
           'userAuth',
           null,
         ),
-      'users': _i12.UsersEndpoint()
+      'users': _i14.UsersEndpoint()
         ..initialize(
           server,
           'users',
@@ -423,7 +437,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'bytes': _i1.ParameterDescription(
               name: 'bytes',
-              type: _i1.getType<_i13.ByteData>(),
+              type: _i1.getType<_i15.ByteData>(),
               nullable: false,
             ),
             'filename': _i1.ParameterDescription(
@@ -758,6 +772,159 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
+    connectors['oAuthConfig'] = _i1.EndpointConnector(
+      name: 'oAuthConfig',
+      endpoint: endpoints['oAuthConfig']!,
+      methodConnectors: {
+        'list': _i1.MethodConnector(
+          name: 'list',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['oAuthConfig'] as _i10.OAuthConfigEndpoint)
+                  .list(session),
+        ),
+        'availableProviders': _i1.MethodConnector(
+          name: 'availableProviders',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['oAuthConfig'] as _i10.OAuthConfigEndpoint)
+                  .availableProviders(session),
+        ),
+        'save': _i1.MethodConnector(
+          name: 'save',
+          params: {
+            'provider': _i1.ParameterDescription(
+              name: 'provider',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'clientId': _i1.ParameterDescription(
+              name: 'clientId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'clientSecret': _i1.ParameterDescription(
+              name: 'clientSecret',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'enabled': _i1.ParameterDescription(
+              name: 'enabled',
+              type: _i1.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['oAuthConfig'] as _i10.OAuthConfigEndpoint).save(
+                    session,
+                    params['provider'],
+                    params['clientId'],
+                    params['clientSecret'],
+                    params['enabled'],
+                  ),
+        ),
+        'delete': _i1.MethodConnector(
+          name: 'delete',
+          params: {
+            'provider': _i1.ParameterDescription(
+              name: 'provider',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['oAuthConfig'] as _i10.OAuthConfigEndpoint).delete(
+                    session,
+                    params['provider'],
+                  ),
+        ),
+      },
+    );
+    connectors['oAuth'] = _i1.EndpointConnector(
+      name: 'oAuth',
+      endpoint: endpoints['oAuth']!,
+      methodConnectors: {
+        'listProviders': _i1.MethodConnector(
+          name: 'listProviders',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['oAuth'] as _i11.OAuthEndpoint)
+                  .listProviders(session),
+        ),
+        'getAuthUrl': _i1.MethodConnector(
+          name: 'getAuthUrl',
+          params: {
+            'provider': _i1.ParameterDescription(
+              name: 'provider',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'redirectUri': _i1.ParameterDescription(
+              name: 'redirectUri',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['oAuth'] as _i11.OAuthEndpoint).getAuthUrl(
+                session,
+                params['provider'],
+                params['redirectUri'],
+              ),
+        ),
+        'completeAuth': _i1.MethodConnector(
+          name: 'completeAuth',
+          params: {
+            'provider': _i1.ParameterDescription(
+              name: 'provider',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'state': _i1.ParameterDescription(
+              name: 'state',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'code': _i1.ParameterDescription(
+              name: 'code',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['oAuth'] as _i11.OAuthEndpoint).completeAuth(
+                    session,
+                    params['provider'],
+                    params['state'],
+                    params['code'],
+                  ),
+        ),
+      },
+    );
     connectors['posts'] = _i1.EndpointConnector(
       name: 'posts',
       endpoint: endpoints['posts']!,
@@ -770,7 +937,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['posts'] as _i10.PostsEndpoint).listPosts(session),
+                  (endpoints['posts'] as _i12.PostsEndpoint).listPosts(session),
         ),
         'createPost': _i1.MethodConnector(
           name: 'createPost',
@@ -790,7 +957,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['posts'] as _i10.PostsEndpoint).createPost(
+              ) async => (endpoints['posts'] as _i12.PostsEndpoint).createPost(
                 session,
                 params['title'],
                 params['body'],
@@ -809,7 +976,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['posts'] as _i10.PostsEndpoint).deletePost(
+              ) async => (endpoints['posts'] as _i12.PostsEndpoint).deletePost(
                 session,
                 params['id'],
               ),
@@ -824,7 +991,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
                 Map<String, Stream> streamParams,
-              ) => (endpoints['posts'] as _i10.PostsEndpoint).watchPosts(
+              ) => (endpoints['posts'] as _i12.PostsEndpoint).watchPosts(
                 session,
               ),
         ),
@@ -853,7 +1020,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['userAuth'] as _i11.UserAuthEndpoint).signUp(
+                  (endpoints['userAuth'] as _i13.UserAuthEndpoint).signUp(
                     session,
                     params['email'],
                     params['password'],
@@ -878,7 +1045,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['userAuth'] as _i11.UserAuthEndpoint).signIn(
+                  (endpoints['userAuth'] as _i13.UserAuthEndpoint).signIn(
                     session,
                     params['email'],
                     params['password'],
@@ -897,7 +1064,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['userAuth'] as _i11.UserAuthEndpoint).me(
+              ) async => (endpoints['userAuth'] as _i13.UserAuthEndpoint).me(
                 session,
                 params['token'],
               ),
@@ -916,7 +1083,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['userAuth'] as _i11.UserAuthEndpoint).signOut(
+                  (endpoints['userAuth'] as _i13.UserAuthEndpoint).signOut(
                     session,
                     params['token'],
                   ),
@@ -934,7 +1101,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['userAuth'] as _i11.UserAuthEndpoint)
+              ) async => (endpoints['userAuth'] as _i13.UserAuthEndpoint)
                   .requestEmailVerification(
                     session,
                     params['token'],
@@ -959,7 +1126,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['userAuth'] as _i11.UserAuthEndpoint).verifyEmail(
+                  (endpoints['userAuth'] as _i13.UserAuthEndpoint).verifyEmail(
                     session,
                     params['token'],
                     params['code'],
@@ -978,7 +1145,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['userAuth'] as _i11.UserAuthEndpoint)
+              ) async => (endpoints['userAuth'] as _i13.UserAuthEndpoint)
                   .requestPasswordReset(
                     session,
                     params['email'],
@@ -1007,7 +1174,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['userAuth'] as _i11.UserAuthEndpoint)
+              ) async => (endpoints['userAuth'] as _i13.UserAuthEndpoint)
                   .confirmPasswordReset(
                     session,
                     params['email'],
@@ -1039,7 +1206,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['users'] as _i12.UsersEndpoint).list(
+              ) async => (endpoints['users'] as _i14.UsersEndpoint).list(
                 session,
                 page: params['page'],
                 perPage: params['perPage'],
@@ -1053,7 +1220,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['users'] as _i12.UsersEndpoint).count(session),
+                  (endpoints['users'] as _i14.UsersEndpoint).count(session),
         ),
         'sessionCount': _i1.MethodConnector(
           name: 'sessionCount',
@@ -1069,7 +1236,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['users'] as _i12.UsersEndpoint).sessionCount(
+                  (endpoints['users'] as _i14.UsersEndpoint).sessionCount(
                     session,
                     params['userId'],
                   ),
@@ -1088,7 +1255,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['users'] as _i12.UsersEndpoint).revokeSessions(
+                  (endpoints['users'] as _i14.UsersEndpoint).revokeSessions(
                     session,
                     params['userId'],
                   ),
@@ -1106,16 +1273,16 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['users'] as _i12.UsersEndpoint).delete(
+              ) async => (endpoints['users'] as _i14.UsersEndpoint).delete(
                 session,
                 params['userId'],
               ),
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _i14.Endpoints()
+    modules['serverpod_auth_idp'] = _i16.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i15.Endpoints()
+    modules['serverpod_auth_core'] = _i17.Endpoints()
       ..initializeEndpoints(server);
   }
 }
