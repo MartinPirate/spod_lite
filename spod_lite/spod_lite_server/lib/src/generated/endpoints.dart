@@ -921,6 +921,100 @@ class Endpoints extends _i1.EndpointDispatch {
                     params['token'],
                   ),
         ),
+        'requestEmailVerification': _i1.MethodConnector(
+          name: 'requestEmailVerification',
+          params: {
+            'token': _i1.ParameterDescription(
+              name: 'token',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['userAuth'] as _i11.UserAuthEndpoint)
+                  .requestEmailVerification(
+                    session,
+                    params['token'],
+                  ),
+        ),
+        'verifyEmail': _i1.MethodConnector(
+          name: 'verifyEmail',
+          params: {
+            'token': _i1.ParameterDescription(
+              name: 'token',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'code': _i1.ParameterDescription(
+              name: 'code',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['userAuth'] as _i11.UserAuthEndpoint).verifyEmail(
+                    session,
+                    params['token'],
+                    params['code'],
+                  ),
+        ),
+        'requestPasswordReset': _i1.MethodConnector(
+          name: 'requestPasswordReset',
+          params: {
+            'email': _i1.ParameterDescription(
+              name: 'email',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['userAuth'] as _i11.UserAuthEndpoint)
+                  .requestPasswordReset(
+                    session,
+                    params['email'],
+                  ),
+        ),
+        'confirmPasswordReset': _i1.MethodConnector(
+          name: 'confirmPasswordReset',
+          params: {
+            'email': _i1.ParameterDescription(
+              name: 'email',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'code': _i1.ParameterDescription(
+              name: 'code',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'newPassword': _i1.ParameterDescription(
+              name: 'newPassword',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['userAuth'] as _i11.UserAuthEndpoint)
+                  .confirmPasswordReset(
+                    session,
+                    params['email'],
+                    params['code'],
+                    params['newPassword'],
+                  ),
+        ),
       },
     );
     connectors['users'] = _i1.EndpointConnector(

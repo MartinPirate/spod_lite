@@ -516,6 +516,56 @@ class EndpointUserAuth extends _i1.EndpointRef {
     'signOut',
     {'token': token},
   );
+
+  /// Generates a verification code, persists it on the caller's account,
+  /// and emails it. Idempotent if the user is already verified.
+  _i2.Future<void> requestEmailVerification(String token) =>
+      caller.callServerEndpoint<void>(
+        'userAuth',
+        'requestEmailVerification',
+        {'token': token},
+      );
+
+  /// Confirms an email-verification code. Marks the account verified and
+  /// clears the code on success. Throws on invalid or expired codes.
+  _i2.Future<void> verifyEmail(
+    String token,
+    String code,
+  ) => caller.callServerEndpoint<void>(
+    'userAuth',
+    'verifyEmail',
+    {
+      'token': token,
+      'code': code,
+    },
+  );
+
+  /// Sends a password-reset code to the account at [email] if one exists.
+  /// Always returns normally so the endpoint can't be used for user
+  /// enumeration.
+  _i2.Future<void> requestPasswordReset(String email) =>
+      caller.callServerEndpoint<void>(
+        'userAuth',
+        'requestPasswordReset',
+        {'email': email},
+      );
+
+  /// Confirms a password-reset code and sets a new password. Invalidates
+  /// every existing session on the account so a stolen session can't
+  /// survive a reset.
+  _i2.Future<void> confirmPasswordReset(
+    String email,
+    String code,
+    String newPassword,
+  ) => caller.callServerEndpoint<void>(
+    'userAuth',
+    'confirmPasswordReset',
+    {
+      'email': email,
+      'code': code,
+      'newPassword': newPassword,
+    },
+  );
 }
 
 /// Admin-only API for managing end-user accounts.

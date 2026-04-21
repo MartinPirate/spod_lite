@@ -45,6 +45,10 @@ userAuth:
   - signIn:
   - me:
   - signOut:
+  - requestEmailVerification:
+  - verifyEmail:
+  - requestPasswordReset:
+  - confirmPasswordReset:
 users:
   - list:
   - count:

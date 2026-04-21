@@ -20,13 +20,23 @@ abstract class AppUser implements _i1.SerializableModel {
     this.id,
     required this.email,
     required this.passwordHash,
+    bool? emailVerified,
+    this.emailVerificationCode,
+    this.emailVerificationExpiresAt,
+    this.passwordResetCode,
+    this.passwordResetExpiresAt,
     this.createdAt,
-  });
+  }) : emailVerified = emailVerified ?? false;
 
   factory AppUser({
     int? id,
     required String email,
     required String passwordHash,
+    bool? emailVerified,
+    String? emailVerificationCode,
+    DateTime? emailVerificationExpiresAt,
+    String? passwordResetCode,
+    DateTime? passwordResetExpiresAt,
     DateTime? createdAt,
   }) = _AppUserImpl;
 
@@ -35,6 +45,24 @@ abstract class AppUser implements _i1.SerializableModel {
       id: jsonSerialization['id'] as int?,
       email: jsonSerialization['email'] as String,
       passwordHash: jsonSerialization['passwordHash'] as String,
+      emailVerified: jsonSerialization['emailVerified'] == null
+          ? null
+          : _i1.BoolJsonExtension.fromJson(jsonSerialization['emailVerified']),
+      emailVerificationCode:
+          jsonSerialization['emailVerificationCode'] as String?,
+      emailVerificationExpiresAt:
+          jsonSerialization['emailVerificationExpiresAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(
+              jsonSerialization['emailVerificationExpiresAt'],
+            ),
+      passwordResetCode: jsonSerialization['passwordResetCode'] as String?,
+      passwordResetExpiresAt:
+          jsonSerialization['passwordResetExpiresAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(
+              jsonSerialization['passwordResetExpiresAt'],
+            ),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -50,6 +78,16 @@ abstract class AppUser implements _i1.SerializableModel {
 
   String passwordHash;
 
+  bool emailVerified;
+
+  String? emailVerificationCode;
+
+  DateTime? emailVerificationExpiresAt;
+
+  String? passwordResetCode;
+
+  DateTime? passwordResetExpiresAt;
+
   DateTime? createdAt;
 
   /// Returns a shallow copy of this [AppUser]
@@ -59,6 +97,11 @@ abstract class AppUser implements _i1.SerializableModel {
     int? id,
     String? email,
     String? passwordHash,
+    bool? emailVerified,
+    String? emailVerificationCode,
+    DateTime? emailVerificationExpiresAt,
+    String? passwordResetCode,
+    DateTime? passwordResetExpiresAt,
     DateTime? createdAt,
   });
   @override
@@ -68,6 +111,14 @@ abstract class AppUser implements _i1.SerializableModel {
       if (id != null) 'id': id,
       'email': email,
       'passwordHash': passwordHash,
+      'emailVerified': emailVerified,
+      if (emailVerificationCode != null)
+        'emailVerificationCode': emailVerificationCode,
+      if (emailVerificationExpiresAt != null)
+        'emailVerificationExpiresAt': emailVerificationExpiresAt?.toJson(),
+      if (passwordResetCode != null) 'passwordResetCode': passwordResetCode,
+      if (passwordResetExpiresAt != null)
+        'passwordResetExpiresAt': passwordResetExpiresAt?.toJson(),
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
     };
   }
@@ -85,11 +136,21 @@ class _AppUserImpl extends AppUser {
     int? id,
     required String email,
     required String passwordHash,
+    bool? emailVerified,
+    String? emailVerificationCode,
+    DateTime? emailVerificationExpiresAt,
+    String? passwordResetCode,
+    DateTime? passwordResetExpiresAt,
     DateTime? createdAt,
   }) : super._(
          id: id,
          email: email,
          passwordHash: passwordHash,
+         emailVerified: emailVerified,
+         emailVerificationCode: emailVerificationCode,
+         emailVerificationExpiresAt: emailVerificationExpiresAt,
+         passwordResetCode: passwordResetCode,
+         passwordResetExpiresAt: passwordResetExpiresAt,
          createdAt: createdAt,
        );
 
@@ -101,12 +162,30 @@ class _AppUserImpl extends AppUser {
     Object? id = _Undefined,
     String? email,
     String? passwordHash,
+    bool? emailVerified,
+    Object? emailVerificationCode = _Undefined,
+    Object? emailVerificationExpiresAt = _Undefined,
+    Object? passwordResetCode = _Undefined,
+    Object? passwordResetExpiresAt = _Undefined,
     Object? createdAt = _Undefined,
   }) {
     return AppUser(
       id: id is int? ? id : this.id,
       email: email ?? this.email,
       passwordHash: passwordHash ?? this.passwordHash,
+      emailVerified: emailVerified ?? this.emailVerified,
+      emailVerificationCode: emailVerificationCode is String?
+          ? emailVerificationCode
+          : this.emailVerificationCode,
+      emailVerificationExpiresAt: emailVerificationExpiresAt is DateTime?
+          ? emailVerificationExpiresAt
+          : this.emailVerificationExpiresAt,
+      passwordResetCode: passwordResetCode is String?
+          ? passwordResetCode
+          : this.passwordResetCode,
+      passwordResetExpiresAt: passwordResetExpiresAt is DateTime?
+          ? passwordResetExpiresAt
+          : this.passwordResetExpiresAt,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
     );
   }

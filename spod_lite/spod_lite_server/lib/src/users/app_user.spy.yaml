@@ -7,6 +7,11 @@ table: app_user
 fields:
   email: String
   passwordHash: String
+  emailVerified: bool, default=false
+  emailVerificationCode: String?
+  emailVerificationExpiresAt: DateTime?
+  passwordResetCode: String?
+  passwordResetExpiresAt: DateTime?
   createdAt: DateTime?, defaultPersist=now
 
 indexes:
