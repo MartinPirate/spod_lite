@@ -234,12 +234,18 @@ class CollectionsEndpoint extends Endpoint {
       final key = entry.key.toString();
       if (!allowedKeys.contains(key)) continue;
       final value = entry.value.toString();
+      // Simple modes pass through. Anything else is treated as a
+      // free-form expression and must parse cleanly at write time — we
+      // don't want dashboards storing rules that blow up on every
+      // request.
       if (!ruleModes.contains(value)) {
-        throw SpodLiteException(
-          message:
-              'Rule value "$value" is invalid. Allowed: ${ruleModes.join(", ")}.',
-          code: SpodLiteErrorCode.invalidInput,
-        );
+        final err = validateRule(value);
+        if (err != null) {
+          throw SpodLiteException(
+            message: 'Rule "$key" has a syntax error: $err',
+            code: SpodLiteErrorCode.invalidInput,
+          );
+        }
       }
       result[key] = value;
     }

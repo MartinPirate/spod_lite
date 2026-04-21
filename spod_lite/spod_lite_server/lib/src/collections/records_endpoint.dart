@@ -7,6 +7,13 @@ import 'rule_enforcer.dart';
 
 String _eventChannel(String collectionName) => 'records:$collectionName';
 
+/// Upper bound on rows scanned when a list/count is gated by a
+/// row-level rule. Filtering happens in-app, so this is also the cap on
+/// how far back list results can reach. Collections with row-level rules
+/// that exceed this size need a custom endpoint or SQL translation —
+/// call out in docs/rules.md.
+const int _rowCheckScanCap = 1000;
+
 /// Generic CRUD over user-defined collections.
 ///
 /// Records are passed across the wire as JSON strings because Serverpod's
@@ -36,12 +43,32 @@ class RecordsEndpoint extends Endpoint {
     final table = quoteIdent(tableNameFor(collectionName));
     final offset = (cappedPage - 1) * cappedPerPage;
 
+    // Fast path: no per-row evaluation needed — let Postgres paginate.
+    if (!needsRowCheck(def.listRule)) {
+      final result = await session.db.unsafeQuery(
+        'select * from $table order by "id" desc limit $cappedPerPage offset $offset',
+      );
+      return result
+          .map((row) => jsonEncode(_normalize(row.toColumnMap())))
+          .toList();
+    }
+
+    // Row-level: scan the newest [_rowCheckScanCap] rows, filter, page
+    // in memory. Documented caveat — row-level rules are O(N) on list.
     final result = await session.db.unsafeQuery(
-      'select * from $table order by "id" desc limit $cappedPerPage offset $offset',
+      'select * from $table order by "id" desc limit $_rowCheckScanCap',
     );
-    return result
-        .map((row) => jsonEncode(_normalize(row.toColumnMap())))
-        .toList();
+    final auth = session.authenticated;
+    final filtered = <Map<String, dynamic>>[];
+    for (final raw in result) {
+      final row = _normalize(raw.toColumnMap());
+      if (recordAllowed(rule: def.listRule, auth: auth, record: row)) {
+        filtered.add(row);
+      }
+    }
+    final start = offset.clamp(0, filtered.length);
+    final end = (offset + cappedPerPage).clamp(0, filtered.length);
+    return filtered.sublist(start, end).map(jsonEncode).toList();
   }
 
   Future<int> count(Session session, String collectionName) async {
@@ -49,9 +76,24 @@ class RecordsEndpoint extends Endpoint {
     final def = await _requireCollection(session, collectionName);
     await enforceRule(session, def.listRule, operation: 'list');
     final table = quoteIdent(tableNameFor(collectionName));
-    final result =
-        await session.db.unsafeQuery('select count(*) from $table');
-    return (result.first[0] as int?) ?? 0;
+
+    if (!needsRowCheck(def.listRule)) {
+      final result =
+          await session.db.unsafeQuery('select count(*) from $table');
+      return (result.first[0] as int?) ?? 0;
+    }
+
+    // Row-level count: scan capped window, filter, count.
+    final result = await session.db.unsafeQuery(
+      'select * from $table order by "id" desc limit $_rowCheckScanCap',
+    );
+    final auth = session.authenticated;
+    var n = 0;
+    for (final raw in result) {
+      final row = _normalize(raw.toColumnMap());
+      if (recordAllowed(rule: def.listRule, auth: auth, record: row)) n++;
+    }
+    return n;
   }
 
   Future<String?> get(
@@ -69,7 +111,17 @@ class RecordsEndpoint extends Endpoint {
       parameters: QueryParameters.named({'id': id}),
     );
     if (result.isEmpty) return null;
-    return jsonEncode(_normalize(result.first.toColumnMap()));
+    final row = _normalize(result.first.toColumnMap());
+
+    // Row-level view rule: treat disallowed as not-found so we don't
+    // leak existence of records the caller can't see.
+    if (needsRowCheck(def.viewRule)) {
+      final auth = session.authenticated;
+      if (!recordAllowed(rule: def.viewRule, auth: auth, record: row)) {
+        return null;
+      }
+    }
+    return jsonEncode(row);
   }
 
   Future<String> create(
@@ -96,15 +148,33 @@ class RecordsEndpoint extends Endpoint {
     final cols = <String>[];
     final placeholders = <String>[];
     final params = <String, dynamic>{};
+    final proposed = <String, dynamic>{};
     for (final entry in data.entries) {
       final field = byName[entry.key];
       if (field == null) continue;
+      final coerced = _coerce(entry.value, field.fieldType);
       cols.add(quoteIdent(entry.key));
       placeholders.add('@${entry.key}');
-      params[entry.key] = _coerce(entry.value, field.fieldType);
+      params[entry.key] = coerced;
+      proposed[entry.key] = coerced;
     }
     if (cols.isEmpty) {
       throw SpodLiteException(message: 'No matching fields provided.', code: SpodLiteErrorCode.invalidInput);
+    }
+
+    // Row-level create rule: evaluate against the proposed payload
+    // before we touch the table. Server-generated columns (id,
+    // created_at) aren't present yet; rules shouldn't reference them.
+    if (needsRowCheck(def.createRule)) {
+      final auth = session.authenticated;
+      if (!recordAllowed(rule: def.createRule, auth: auth, record: proposed)) {
+        throw SpodLiteException(
+          message: 'Not allowed to create this record.',
+          code: auth == null
+              ? SpodLiteErrorCode.unauthorized
+              : SpodLiteErrorCode.forbidden,
+        );
+      }
     }
 
     final table = quoteIdent(tableNameFor(collectionName));
@@ -149,13 +219,38 @@ class RecordsEndpoint extends Endpoint {
     }
 
     final table = quoteIdent(tableNameFor(collectionName));
+
+    // Row-level update rule: fetch the current row and evaluate the
+    // rule against it before we apply the change. If the rule rejects,
+    // surface as not-found so we don't leak existence.
+    if (needsRowCheck(def.updateRule)) {
+      final current = await session.db.unsafeQuery(
+        'select * from $table where "id" = @id limit 1',
+        parameters: QueryParameters.named({'id': id}),
+      );
+      if (current.isEmpty) {
+        throw SpodLiteException(
+          message: 'Record $id not found in "$collectionName".',
+          code: SpodLiteErrorCode.notFound,
+        );
+      }
+      final row = _normalize(current.first.toColumnMap());
+      final auth = session.authenticated;
+      if (!recordAllowed(rule: def.updateRule, auth: auth, record: row)) {
+        throw SpodLiteException(
+          message: 'Record $id not found in "$collectionName".',
+          code: SpodLiteErrorCode.notFound,
+        );
+      }
+    }
+
     final result = await session.db.unsafeQuery(
       'update $table set ${setters.join(", ")} '
       'where "id" = @_id returning *',
       parameters: QueryParameters.named(params),
     );
     if (result.isEmpty) {
-      throw SpodLiteException(message: 
+      throw SpodLiteException(message:
           'Record $id not found in "$collectionName".', code: SpodLiteErrorCode.notFound);
     }
     final row = _normalize(result.first.toColumnMap());
@@ -175,6 +270,23 @@ class RecordsEndpoint extends Endpoint {
     await enforceRule(session, def.deleteRule, operation: 'delete');
 
     final table = quoteIdent(tableNameFor(collectionName));
+
+    if (needsRowCheck(def.deleteRule)) {
+      final current = await session.db.unsafeQuery(
+        'select * from $table where "id" = @id limit 1',
+        parameters: QueryParameters.named({'id': id}),
+      );
+      if (current.isEmpty) return; // already absent — idempotent delete
+      final row = _normalize(current.first.toColumnMap());
+      final auth = session.authenticated;
+      if (!recordAllowed(rule: def.deleteRule, auth: auth, record: row)) {
+        throw SpodLiteException(
+          message: 'Record $id not found in "$collectionName".',
+          code: SpodLiteErrorCode.notFound,
+        );
+      }
+    }
+
     await session.db.unsafeExecute(
       'delete from $table where "id" = @id',
       parameters: QueryParameters.named({'id': id}),
@@ -183,7 +295,12 @@ class RecordsEndpoint extends Endpoint {
   }
 
   /// Live stream of record events for a collection. Enforces the same
-  /// rule as `list`.
+  /// rule as `list`. For row-level rules, `created`/`updated` events are
+  /// filtered against the current state; `deleted` events carry only an
+  /// id (no row to evaluate) and are delivered unconditionally — UIs
+  /// need the signal to remove stale items they may have already
+  /// surfaced. This trades a small existence leak for live-sync
+  /// usability; see docs/rules.md.
   Stream<RecordEvent> watch(
     Session session,
     String collectionName,
@@ -191,8 +308,31 @@ class RecordsEndpoint extends Endpoint {
     assertValidIdentifier(collectionName, kind: 'collection name');
     final def = await _requireCollection(session, collectionName);
     await enforceRule(session, def.listRule, operation: 'watch');
-    yield* session.messages
+
+    final stream = session.messages
         .createStream<RecordEvent>(_eventChannel(collectionName));
+
+    if (!needsRowCheck(def.listRule)) {
+      yield* stream;
+      return;
+    }
+
+    final auth = session.authenticated;
+    await for (final event in stream) {
+      if (event.type == 'deleted' || event.recordJson == null) {
+        yield event;
+        continue;
+      }
+      try {
+        final row = Map<String, dynamic>.from(jsonDecode(event.recordJson!) as Map);
+        if (recordAllowed(rule: def.listRule, auth: auth, record: row)) {
+          yield event;
+        }
+      } on FormatException {
+        // Malformed payload from producer — don't crash the stream;
+        // drop the event so we never surface an un-evaluated row.
+      }
+    }
   }
 
   Future<void> _emit(
