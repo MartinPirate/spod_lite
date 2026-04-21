@@ -9,6 +9,8 @@ import '../util.dart';
 class AddCommand extends Command<int> {
   AddCommand() {
     addSubcommand(AddCollectionCommand());
+    addSubcommand(AddEndpointCommand());
+    addSubcommand(AddAdminCommand());
   }
 
   @override
@@ -17,6 +19,227 @@ class AddCommand extends Command<int> {
   @override
   String get description =>
       'Scaffold new primitives into an existing Serverpod Lite project.';
+}
+
+/// `spod add endpoint <name>` — scaffolds a bare `*Endpoint` class.
+class AddEndpointCommand extends Command<int> {
+  AddEndpointCommand() {
+    argParser.addFlag(
+      'generate',
+      defaultsTo: true,
+      help: 'Run `serverpod generate` after scaffolding.',
+    );
+  }
+
+  @override
+  String get name => 'endpoint';
+
+  @override
+  String get description =>
+      'Scaffold a bare Endpoint class (no table, just methods).';
+
+  @override
+  String get invocation => 'spod add endpoint <name>';
+
+  static final _nameRe = RegExp(r'^[a-z][a-z0-9_]{0,62}$');
+
+  @override
+  Future<int> run() async {
+    final rest = argResults?.rest ?? const [];
+    if (rest.length != 1) {
+      logErr('One endpoint name required.\n\nUsage: $invocation');
+      return 64;
+    }
+    final name = rest.first;
+    if (!_nameRe.hasMatch(name)) {
+      logErr('Invalid endpoint name: "$name"');
+      return 64;
+    }
+
+    final serverDir = findServerDir(Directory.current);
+    if (serverDir == null) {
+      logErr('Could not find a `*_server/` under ${Directory.current.path}.');
+      return 66;
+    }
+
+    final className = _camelCase(name);
+    final path = p.join(
+      serverDir.path,
+      'lib',
+      'src',
+      name,
+      '${name}_endpoint.dart',
+    );
+    if (File(path).existsSync()) {
+      logErr('Already exists: $path');
+      return 73;
+    }
+    Directory(p.dirname(path)).createSync(recursive: true);
+    File(path).writeAsStringSync('''
+import 'package:serverpod/serverpod.dart';
+
+/// Scaffolded by `spod add endpoint`. Each public method becomes a typed
+/// endpoint call on the generated client after `serverpod generate`.
+class ${className}Endpoint extends Endpoint {
+  Future<String> hello(Session session) async {
+    return 'hello from ${className}Endpoint';
+  }
+}
+''');
+    logStep('Wrote ${p.relative(path)}');
+
+    if (argResults?['generate'] == true) {
+      final cli = await locateServerpodCli();
+      if (cli == null) {
+        logErr('`serverpod` not on PATH — skipping generate.');
+      } else {
+        logStep('Running serverpod generate …');
+        await runInherit(cli, ['generate'],
+            workingDirectory: serverDir.path);
+      }
+    }
+
+    stdout.writeln();
+    stdout.writeln('✓ Added endpoint "$name"');
+    stdout.writeln('  Restart with `spod up` so the new route is served.');
+    return 0;
+  }
+
+  String _camelCase(String snake) => snake
+      .split('_')
+      .map((s) => s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}')
+      .join();
+}
+
+/// `spod add admin` — insert an admin_user row directly into Postgres so
+/// you can seed additional operators from the CLI. Prompts interactively
+/// for email + password if not provided as flags.
+class AddAdminCommand extends Command<int> {
+  AddAdminCommand() {
+    argParser
+      ..addOption('email', abbr: 'e', help: 'Admin email.')
+      ..addOption('password', abbr: 'p', help: 'Admin password.')
+      ..addOption(
+        'db-container',
+        defaultsTo: 'spod-pg',
+        help: 'Docker container running Postgres.',
+      );
+  }
+
+  @override
+  String get name => 'admin';
+
+  @override
+  String get description => 'Insert a new admin_user row via the Postgres container.';
+
+  @override
+  Future<int> run() async {
+    var email = argResults?['email'] as String?;
+    var password = argResults?['password'] as String?;
+    final container = argResults?['db-container'] as String;
+
+    if (email == null || email.isEmpty) {
+      stdout.write('Email: ');
+      email = stdin.readLineSync()?.trim();
+    }
+    if (password == null || password.isEmpty) {
+      stdout.write('Password (min 8 chars): ');
+      stdin.echoMode = false;
+      password = stdin.readLineSync();
+      stdin.echoMode = true;
+      stdout.writeln();
+    }
+    if (email == null || email.isEmpty) {
+      logErr('Email is required.');
+      return 64;
+    }
+    if (password == null || password.length < 8) {
+      logErr('Password must be at least 8 characters.');
+      return 64;
+    }
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      logErr('Invalid email address.');
+      return 64;
+    }
+
+    if (!await commandExists('docker')) {
+      logErr('`docker` is not on PATH.');
+      return 69;
+    }
+
+    // bcrypt via openssl would require a C dep; easier: call dart inline.
+    final hash = await _hashWithDart(password);
+    if (hash == null) {
+      logErr('Could not hash password (is `dart` on PATH?).');
+      return 70;
+    }
+
+    final normalized = email.trim().toLowerCase();
+    final sql =
+        "INSERT INTO admin_user (email, password_hash, created_at) "
+        "VALUES ('${normalized.replaceAll("'", "''")}', "
+        "'${hash.replaceAll("'", "''")}', NOW()) "
+        "ON CONFLICT (email) DO NOTHING RETURNING id;";
+
+    logStep('Inserting admin via $container …');
+    final result = await Process.run('docker', [
+      'exec',
+      container,
+      'psql',
+      '-U',
+      'postgres',
+      '-d',
+      'spod_lite',
+      '-t',
+      '-c',
+      sql,
+    ]);
+    if (result.exitCode != 0) {
+      logErr('psql failed:\n${result.stderr}');
+      return 70;
+    }
+    final out = (result.stdout as String).trim();
+    if (out.isEmpty) {
+      stdout.writeln('ℹ admin "$normalized" already exists — no change.');
+    } else {
+      stdout.writeln('✓ admin "$normalized" created (id=$out).');
+    }
+    return 0;
+  }
+
+  /// Shells out to `dart` to hash the password with the same bcrypt
+  /// settings the server uses (logRounds 12). Avoids adding bcrypt as a
+  /// CLI dependency just for this one command.
+  Future<String?> _hashWithDart(String password) async {
+    final snippet =
+        "import 'package:bcrypt/bcrypt.dart'; void main() { "
+        "print(BCrypt.hashpw(String.fromEnvironment('P'), BCrypt.gensalt(logRounds: 12))); }";
+    final tmp = File(
+        '${Directory.systemTemp.createTempSync('spod_admin_').path}/hash.dart');
+    tmp.writeAsStringSync(snippet);
+    // Try to find the server dir so bcrypt is resolvable.
+    final serverDir = findServerDir(Directory.current);
+    if (serverDir == null) return null;
+    final scriptPath = p.join(serverDir.path, '.spod_hash.dart');
+    File(scriptPath).writeAsStringSync(snippet);
+    try {
+      final r = await Process.run(
+        'dart',
+        ['--define=P=$password', 'run', '.spod_hash.dart'],
+        workingDirectory: serverDir.path,
+      );
+      if (r.exitCode != 0) return null;
+      final s = (r.stdout as String).trim();
+      return s.isEmpty ? null : s.split('\n').last;
+    } finally {
+      try {
+        File(scriptPath).deleteSync();
+      } catch (_) {}
+      try {
+        tmp.parent.deleteSync(recursive: true);
+      } catch (_) {}
+    }
+  }
 }
 
 class AddCollectionCommand extends Command<int> {
